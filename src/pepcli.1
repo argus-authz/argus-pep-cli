@@ -1,0 +1,164 @@
+.\" Copyright (c) 2009, Members of the EGEE Collaboration.
+.\" PEP-C client CLI: pepcli(1) man page
+.\" Valery Tschopp - SWITCH
+.\" $Id: pepcli.1 1284 2009-09-25 13:27:43Z vtschopp $
+.TH pepcli 1 "May 2009" "EGEE gLite" "ARGUS Authorization Service"
+.SH NAME
+pepcli \- command line interface to the gLite ARGUS Authorization PEP-C client library
+.SH SYNOPSIS
+\fBpepcli\fR \-\-pepd \fIURL\fR \-\-certchain \fIFILE\fR [options...]
+.PP
+\fBpepcli\fR \-\-pepd \fIURL\fR \-\-subjectid \fIID\fR [options...]
+.SH DESCRIPTION
+The 
+.B pepcli
+command is the command line interface to the gLite ARGUS Authorization PEP-C client library. 
+This command allow user to submit a XACML Request to a PEP daemon (PEPd) and to receive the XACML Response back.
+The XACML Response decision and the received Obligations are displayed as result.
+.SH OPTIONS
+.TP
+.BI "\-p" " URL" ", \-\-pepd" " URL"
+Specify the 
+.B mandatory
+PEP daemon (PEPd) endpoint 
+.IR URL .
+Add multiple
+.BI "\-\-pepd" " URL"
+options for failover (executed in order).
+.TP
+.BI "\-c" " FILE" ", \-\-certchain" " FILE"
+Set the
+.B mandatory
+, and mutually exclusive with the \-\-subjectid option,  XACML Subject attribute identifier
+.B cert\-chain
+with the value read from
+.IR FILE .
+The 
+.I FILE
+contains a PEM encoded user certificate (X509) or proxy certificate. 
+.TP
+.BI "\-s" " ID" ", \-\-subjectid" " ID"
+Set the
+.B mandatory
+, and mutually exclusive with the \-\-certchain option, 
+XACML Subject attribute identifier
+.B subject\-id
+with the value set as the
+.I ID
+argument. The
+.I ID
+is typically a user certificate subject DN in 
+.B RFC 2253
+format.
+.TP
+.BI "\-f" " FQAN" ", \-\-fqan" " FQAN"
+Set the XACML Subject attribute identifiers
+.B voms\-primary\-fqan
+and
+.B voms\-fqan
+with the value(s) set as the
+.I FQAN 
+argument.
+Add multiple
+.BI "\-\-fqan" " FQAN"
+options for secondary FQANs. The first given
+.BI "\-\-fqan" " FQAN"
+option will always be the 
+.B voms\-primary\-fqan
+attribute value. All specified
+.BI "\-\-fqan" " FQAN"
+option arguments will be add into the 
+.B voms\-fqan
+multi-valued attribute values.
+.TP
+.BI "\-r" " URI" ", \-\-resourceid" " URI"
+Set the XACML Resource attribute identifier
+.B resource\-id
+with the value set as the
+.I URI
+argument.
+.TP
+.BI "\-a" " URI" ", \-\-actionid" " URI"
+Set the XACML Action attribute identifier
+.B action\-id
+with the value set as the
+.I URI
+argument.
+.TP
+.BI "\-t" " SEC" ", \-\-timeout" " SEC" 
+Set the PEPd connection timeout to 
+.I SEC
+second. The default timeout is 30 seconds.
+.TP
+.BR "\-v" , " \-\-verbose"
+Display verbose information.
+.TP
+.BR "\-x" , " \-\-requestcontext"
+Display the effective XACML Request context, as processed by the PEP daemon.
+Use this option with the 
+.B "\-\-verbose"
+option.
+.TP
+.BR "\-q" , " \-\-quiet"
+Turn off command output, only the exit status is returned.
+.TP
+.BR "\-d" , " \-\-debug"
+Display debug information.
+.TP
+.BR "\-h" , " \-\-help"
+Display a short help text.
+.SH OPTIONS NOTES
+Using the
+.B pepcli
+command both with the
+.BI "\-\-certchain" " PROXY_FILE"
+and the
+.BI "\-\-fqan" " FQAN"
+options can give indeterminate results if the argument
+.I PROXY_FILE
+is a proxy certificate with VOMS AC. 
+The PEP daemon X.509 PIP will populate the incoming XACML Request with the proxy certificate VOMS AC into XACML Subject
+.BR "voms-primary-fqan" " and" " voms-fqan" 
+attributes, therefore, these attributes will be duplicated, resulting in possible inconsistency.
+.SH EXIT STATUS
+The
+.B pepcli
+command returns a
+.B 0
+exit status if it succeeds to submit the XACML Request to a PEP daemon (PEPd) and receives a valid XACML Response. The XACML Response decision (Permit, Deny, Not Applicable, Indeterminate) does not influence the exit status.
+Non zero is returned in case of failure.
+.TP
+.B 0
+Success.
+.TP
+.B 1
+Memory allocation error.
+.TP
+.B 2
+Invalid command option.
+.TP
+.B 3
+The
+.BI "\-\-certchain" " FILE"
+argument does not exist or does not contain a valid PEM encoded certificate (missing certificate block).
+.TP
+.B 4
+XACML object creation error.
+.TP
+.B 5
+Other PEP-C client library error, see output for more information.
+.SH EXAMPLE
+pepcli \-\-pepd http://pepd.example.org:8154/authz \-\-certchain ~/.globus/usercert.pem \-\-resourceid x\-urn:example.org:gridftp \-\-actionid x\-urn:example.org:authz
+.SH AUTHORS
+The PEP-C client library and the 
+.B pepcli
+command are written by Valery Tschopp - SWITCH
+.SH COPYRIGHT
+Copyright \(co 2009, EGEE gLite
+.SH SEE ALSO
+.TP 
+.I gLite ARGUS Authorization Service
+https://twiki.cern.ch/twiki/bin/view/EGEE/AuthorizationFramework
+.TP
+.I ARGUS PEP-C client library for C
+https://twiki.cern.ch/twiki/bin/view/EGEE/AuthZPEP#PEP_C_Policy_Enforcement_Point_C

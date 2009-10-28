@@ -1,0 +1,32 @@
+PEP-C command line interface (pepcli)
+-------------------------------------
+
+1. First you have to bootstrap the autotools:
+
+./autotools.sh
+
+2. Then use configure (default prefix: /opt/glite):
+
+./configure 
+
+or if you want to install the lib and include in a different directory:
+
+./configure --prefix=/other/directory
+
+3. Build the library:
+
+make
+
+and install it:
+
+make install
+
+4. you are all done :)
+
+The pepcli command is now installed in <prefix>/bin and the man page pepcli(1) is available. 
+
+Dependencies - see DEPENDENCIES file.
+
+
+--
+$Id: INSTALL 1194 2009-06-19 12:54:48Z vtschopp $

@@ -1,0 +1,5 @@
+PEP-C client library dependencies
+---------------------------------
+* libcurl
+--
+$Id: DEPENDENCIES 1194 2009-06-19 12:54:48Z vtschopp $

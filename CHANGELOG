@@ -1,0 +1,71 @@
+PEP-C-CLI 1.2.0
+---------------
+* PEP command line interface (pepcli) separated from the PEP client library package.
+* pepcli: -h|--help shows PEP-C library too.
+* pepcli: -V|--version option added. 
+
+PEP-C 1.1.8
+-----------
+* bug fix: solved segfault problem when a obligation handler failed and the response is deleted.
+
+PEP-C 1.1.7
+-----------
+* bug fix: non thread safe curl_global_init() and curl_global_cleanup() calls removed.
+* pepcli: default PEP timeout set to 30 second.
+* pepcli: error messages and help (-h|--help) message updated.
+
+PEP-C 1.1.6
+-----------
+* source code moved to subversion.
+* bug fix: long option --subjectid added.
+
+PEP-C 1.1.5
+-----------
+* xacml.h: XACML and AuthZ Interop XACML identifier constants added.
+* pepcli: man page pepcli(1) added.
+* pepcli: options --certchain or --subjectid are mandatory but mutually exclusive.
+* pepcli: option --fqan option added. multiple --fqan options generate secondary FQAN, first is primary.
+* pepcli: simple human readable output by default, use --verbose for old style output.
+* pepcli: options --subjectid, --certchain and --fqan generate only one XACML Subject.
+* pepcli: multiple --fqan options generate only one multivalued XACML Attribute voms-fqan in XACML Subject.
+* bug fix: all size_t ..._length(...) functions return 0 on error.
+* bug fix: pepcli check for NULL action or environment in request.
+
+PEP-C 1.1.4
+-----------
+* pepcli: --subjectid parameter added.
+* pepcli: --requestcontext doesn't show (null) string anymore.
+* pepcli: --quiet option added.
+
+PEP-C 1.1.3
+-----------
+* pep.h: option PEP_OPTION_ENDPOINT_SERVER_CAPATH added. see curl CURLOPT_CAPATH.
+* xacml.h: internal xacml_response_relinquishrequest function added.
+* bug fix: pep_authorize() relinquishes effective request from response.
+* bug fix: pep_destroy() free all option strings.
+* bug fix: library doesn't print client_keypassword in debug messages.
+* bug fix: pepcli deletes XACML request and response.
+
+PEP-C 1.1.2
+-----------
+* bug fix: XACML java model namespace changed.
+* bug fix: all xacml_..._length(...) functions return 0 on error.
+* bug fix: XACML Status/@message attribute can be null.
+* bug fix: some marshalling/unmarshalling bugs fixed.
+* libtool: libpep-c uses -version-info
+
+PEP-C 1.1.0
+-----------
+* refactoring: xacml.h replace model.h for the XACML operations.
+* all functionalities implemented:
+  - failover
+  - peer to peer SSL and clientAuth options
+* cli: pepcli command line interface implemented.
+
+PEP-C 1.0.0
+-----------
+beta release of the PEP-C thin client.
+
+--
+$Id: CHANGELOG 1282 2009-09-24 09:56:46Z vtschopp $
+
