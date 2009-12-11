@@ -44,7 +44,7 @@ fi
 # OSX CFLAGS
 case $host in
 *-*-darwin*)
-    CFLAGS="$CFLAGS -arch i386 -arch x86_64 -mmacosx-version-min=10.5"
+    CFLAGS="$CFLAGS -arch i386 -arch x86_64 -mmacosx-version-min=10.5 -iwithsysroot=/Developer/SDKs/MacOSX10.5.sdk"
     AC_MSG_NOTICE([Mac OSX ($host_os) CFLAGS: $CFLAGS])
     ;;
 esac
