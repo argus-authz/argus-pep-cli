@@ -44,21 +44,21 @@ fi
 # OSX CFLAGS
 case $host in
 *-*-darwin*)
-    CFLAGS="$CFLAGS -arch i386 -arch x86_64 -mmacosx-version-min=10.5"
+    CFLAGS="$CFLAGS -arch i386 -arch x86_64 -mmacosx-version-min=10.5 -iwithsysroot=/Developer/SDKs/MacOSX10.5.sdk"
     AC_MSG_NOTICE([Mac OSX ($host_os) CFLAGS: $CFLAGS])
     ;;
 esac
 
+# bootstrap glite.m4 (--with-glite-location=/opt/glite)
+AC_GLITE
 AC_MSG_NOTICE([libdir for $host: $libdir])
-# <prefix>/lib64 for x86_64 cpu 
-#AC_MSG_CHECKING([libdir for $host])
-#if test "x$host_cpu" = "xx86_64"; then
-#    AC_SUBST([libdir], ['${exec_prefix}/lib64'])
-#fi
-#AC_MSG_RESULT([$libdir])
 
-# Checks for curl headers and library
-# will automatically add -lcurl in LDFLAGS
+# Checks for PEP-C headers and library
+# will automatically add -lpep-c in LDFLAGS
+CFLAGS="$CFLAGS $GLITE_CFLAGS"
+AC_MSG_NOTICE([CFLAGS=$CFLAGS])
+LDFLAGS="$LDFLAGS $GLITE_LDFLAGS"
+AC_MSG_NOTICE([LDFLAGS=$LDFLAGS])
 AC_CHECK_HEADER([pep/pep.h],,[AC_MSG_ERROR(can not find pep-c library header)])
 AC_CHECK_LIB(pep-c,pep_initialize)
 AC_CHECK_LIB(pep-c,pep_version)
