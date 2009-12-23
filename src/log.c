@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 Members of the EGEE Collaboration.
+ * Copyright (c) 2008-2009 Members of the EGEE Collaboration.
  * See http://www.eu-egee.org/partners for details on the copyright holders.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -87,7 +87,7 @@ void show_debug(const char * format, ...) {
 }
 
 /*
- * PEP-C logging callback function
+ * PEP-C library logging callback function
  */
 void log_handler_pep(int level, const char * format, va_list args) {
 	if (verbose || debug) {
