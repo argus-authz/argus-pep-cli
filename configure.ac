@@ -65,7 +65,7 @@ AC_CHECK_LIB(pep-c,pep_version)
 
 # Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS([string.h stdlib.h stdio.h stdint.h stdarg.h getopt.h])
+AC_CHECK_HEADERS([string.h stdlib.h stdio.h stdint.h stdarg.h getopt.h pwd.h unistd.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -77,7 +77,7 @@ AC_TYPE_SIZE_T
 
 # Checks for library and functions.
 AC_FUNC_REALLOC
-AC_CHECK_FUNCS([strerror strrchr calloc])
+AC_CHECK_FUNCS([strerror strrchr calloc getpass])
 
 # Sets default prefix
 AC_PREFIX_DEFAULT(/opt/glite)
