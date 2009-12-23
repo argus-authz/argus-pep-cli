@@ -23,8 +23,6 @@
 #include <string.h>
 #include <getopt.h>
 #include <stdarg.h>
-
-// TODO add checks in configure.ac for getpass(...)
 #include <pwd.h>
 #include <unistd.h>
 
