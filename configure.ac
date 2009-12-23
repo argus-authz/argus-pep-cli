@@ -1,6 +1,6 @@
 #                                              -*- Autoconf -*-
 #
-# Copyright 2008 Members of the EGEE Collaboration.
+# Copyright (c) 2008-2009 Members of the EGEE Collaboration.
 # See http://www.eu-egee.org/partners for details on the copyright holders. 
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +18,7 @@
 # $Id: configure.ac 1299 2009-10-15 15:29:34Z vtschopp $
 #
 
-AC_INIT(glite-authz-pep-c-cli, 1.2.0, grid@switch.ch)
+AC_INIT(glite-authz-pep-c-cli, 1.3.0, grid@switch.ch)
 AC_CONFIG_AUX_DIR(project)
 
 # OSX requires ./configure --disable-dependency-tracking to compile, others don't care
@@ -42,12 +42,12 @@ if test "$GCC" = "yes"; then
     CFLAGS="$CFLAGS -Wall "
 fi
 # OSX CFLAGS
-case $host in
-*-*-darwin*)
-    CFLAGS="$CFLAGS -arch i386 -arch x86_64 -mmacosx-version-min=10.5 -iwithsysroot=/Developer/SDKs/MacOSX10.5.sdk"
-    AC_MSG_NOTICE([Mac OSX ($host_os) CFLAGS: $CFLAGS])
-    ;;
-esac
+#case $host in
+#*-*-darwin*)
+#    CFLAGS="$CFLAGS -arch i386 -arch x86_64 -mmacosx-version-min=10.5 -iwithsysroot=/Developer/SDKs/MacOSX10.5.sdk"
+#    AC_MSG_NOTICE([Mac OSX ($host_os) CFLAGS: $CFLAGS])
+#    ;;
+#esac
 
 # bootstrap glite.m4 (--with-glite-location=/opt/glite)
 AC_GLITE
