@@ -110,6 +110,32 @@ Display a short help text.
 .TP
 .BR "\-V" , " \-\-version"
 Display the PEP-C CLI and library versions and exit.
+.SH SSL/TLS OPTIONS
+If the connection to the PEP daemon requires HTTPS and/or TLS client authentication, you can specify the following TLS options:
+.TP
+.BI "\-\-capath" " DIR"
+Set the directory
+.I DIR
+containing the server trusted CA certificates (CA bundle).
+.TP
+.BI "\-\-cacert" " FILE"
+Set the server PEM encoded
+.I FILE
+containing the trusted CA certificate.
+.TP
+.BI "\-\-cert" " FILE"
+Set the client PEM encoded certificate
+.I FILE
+used for the TLS client authentication.
+.TP
+.BI "\-\-key" " FILE"
+Set the client PEM encoded private key
+.I FILE
+used for the TLS client authentication.
+.TP
+.BI "\-\-keypasswd" " PASSWORD"
+Set the client private key password. 
+If this option is omitted and the private key is encrypted, you will be prompt for a password.
 .SH OPTIONS NOTES
 Using the
 .B pepcli
@@ -150,6 +176,18 @@ XACML object creation error.
 .TP
 .B 5
 Other PEP-C client library error, see output for more information.
+.TP
+.B 6
+TLS CA path directory error.
+.TP
+.B 7
+TLS client certificate file error.
+.TP
+.B 8
+TLS client private key file or password error.
+.TP
+.B 9
+TLS server CA certificate file error.
 .SH EXAMPLE
 pepcli \-\-pepd http://pepd.example.org:8154/authz \-\-certchain ~/.globus/usercert.pem \-\-resourceid x\-urn:example.org:gridftp \-\-actionid x\-urn:example.org:authz
 .SH AUTHORS
@@ -157,7 +195,7 @@ The PEP-C client library and the
 .B pepcli
 command are written by Valery Tschopp - SWITCH
 .SH COPYRIGHT
-Copyright \(co 2009, EGEE gLite
+Copyright \(co 2008-2009 Members of the EGEE Collaboration
 .SH SEE ALSO
 .TP 
 .I Argus Authorization Service
