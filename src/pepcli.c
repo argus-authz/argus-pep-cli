@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 Members of the EGEE Collaboration.
+ * Copyright (c) 2008-2009 Members of the EGEE Collaboration.
  * See http://www.eu-egee.org/partners for details on the copyright holders.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,6 +23,11 @@
 #include <string.h>
 #include <getopt.h>
 #include <stdarg.h>
+
+// TODO add checks in configure.ac for getpass(...)
+#include <pwd.h>
+#include <unistd.h>
+
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"  /* PACKAGE_NAME and PACKAGE_VERSION const */
@@ -49,6 +54,10 @@ void log_handler_pep(int level, const char * format, va_list args);
 #define E_CERTCHAIN 3 // certchain file or content error
 #define E_XACMLREQ  4 // XACML request error
 #define E_PEPC      5 // PEP client error
+#define E_CAPATH	6 // CA path directory error
+#define E_CERT		7 // client cert file error
+#define E_KEY		8 // client key file error
+#define E_CACERT	9 // server cert file error
 
 // program options
 static struct option long_options[] = {
@@ -66,6 +75,12 @@ static struct option long_options[] = {
    {"debug",  no_argument,  0, 'd'},
    {"help",  no_argument,  0, 'h'},
    {"version",  no_argument,  0, 'V'},
+   // TLS trust anchors and client authentication
+   {"capath", required_argument, 0, '1'},
+   {"cert", required_argument, 0, '2'},
+   {"key", required_argument, 0, '3'},
+   {"keypasswd", required_argument, 0, '4'},
+   {"cacert", required_argument, 0, '5'},
    {0, 0, 0, 0}
 };
 
@@ -82,13 +97,74 @@ static char * certchain= NULL;
 static char * subjectid= NULL;
 static char * resourceid= NULL;
 static char * actionid= NULL;
+static char * capath_directory= NULL;
+static char * cacert_filename= NULL;
+static char * cert_filename= NULL;
+static char * key_filename= NULL;
+static char * key_password= NULL;
+
 
 // PEM cert delimiters for certchain
 static const char CERT_BEGIN[]= "-----BEGIN CERTIFICATE-----";
 static const char CERT_END[]= "-----END CERTIFICATE-----";
 
+// PEM RSA private key delimiters
+static const char KEY_RSA_BEGIN[]= "-----BEGIN RSA PRIVATE KEY-----";
+static const char KEY_RSA_END[]= "-----END RSA PRIVATE KEY-----";
+// PEM DSA private key delimiters
+static const char KEY_DSA_BEGIN[]= "-----BEGIN DSA PRIVATE KEY-----";
+static const char KEY_DSA_END[]= "-----END DSA PRIVATE KEY-----";
+// PEM encrypted private key Proc-Type header
+static const char KEY_PROCTYPE_ENCRYPTED[]= "Proc-Type: 4,ENCRYPTED";
+
 // special ObligationId: x-posix-account-map
 static const char X_POSIX_ACCOUNT_MAP[]= "x-posix-account-map";
+
+/**
+ * Checks if a file or directory exists and is readable.
+ *
+ * @param filename the name of the file or directory to check
+ * @retun 1 (true) if exists and readable, 0 (false) otherwise
+ */
+static int file_is_readable(const char * filename) {
+	int fexists= 0;
+	FILE * file= fopen(filename,"r");
+	if (file==NULL) {
+		show_error("%s: %s", filename, strerror(errno));
+		fexists= 0;
+	}
+	else
+		fexists= 1;
+	fclose(file);
+	return fexists;
+}
+
+/**
+ * Checks if the PEM encoded private key is encrypted.
+ *
+ * @param keyfile the file name of the PEM encoded private key
+ * @retun 1 (true) if the private key is encrypted, 0 (false) otherwise
+ */
+static int key_is_encrypted(const char * keyfile) {
+	int encrypted= 0;
+	char line[1024];
+	FILE * file= fopen(keyfile,"r");
+	if (file==NULL) {
+		show_error("%s: %s", keyfile, strerror(errno));
+	}
+	else {
+		while(fgets(line,1024,file) != NULL) {
+			if (strncmp(KEY_PROCTYPE_ENCRYPTED,line,strlen(KEY_PROCTYPE_ENCRYPTED)) == 0) {
+				show_debug("key %s is encrypted", keyfile);
+				encrypted= 1;
+				break;
+			}
+		}
+	}
+	fclose(file);
+	return encrypted;
+
+}
 
 /**
  * Reads the certificate file and returns the content as a buffer.
@@ -113,20 +189,20 @@ static char * read_certchain(const char * filename) {
 	while(fgets(line,1024,file) != NULL) {
 		if (strncmp(CERT_BEGIN,line,strlen(CERT_BEGIN)) == 0) {
 			cert_part= 1; // begin
-			show_debug("certificate begin");
+			// show_debug("certificate begin");
 		}
 		if (cert_part) {
 			buffer_write(line,sizeof(char),strlen(line),cert_buffer);
 		}
 		if (strncmp(CERT_END,line,strlen(CERT_END)) == 0) {
 			cert_part= 0; // end
-			show_debug("certificate end");
+			// show_debug("certificate end");
 		}
 	}
 	fclose(file);
 
 	size_t size= buffer_length(cert_buffer);
-	show_debug("buffer length: %d",(int)size);
+	// show_debug("buffer length: %d",(int)size);
 	char * certchain= calloc(size+1,sizeof(char));
 	if (certchain==NULL) {
 		show_error("can not allocate buffer %d bytes: %s",size,strerror(errno));
@@ -646,24 +722,33 @@ static void show_help() {
 	fprintf(stdout,"Submit a XACML Request to the PEPd and show the XACML Response.\n");
 	fprintf(stdout,"\n");
 	fprintf(stdout,"Options:\n");
-	fprintf(stdout," -p|--pepd <URL>         PEPd endpoint URL. Add multiple --pepd options for failover\n");
-	fprintf(stdout," -c|--certchain <FILE>   XACML Subject cert-chain: proxy or X509 file\n");
-	fprintf(stdout," -s|--subjectid <DN>     XACML Subject identifier: user DN (format RFC2253)\n");
-	fprintf(stdout," -f|--fqan <FQAN>        XACML Subject voms-primary-fqan and voms-fqan.\n");
-	fprintf(stdout,"                         Add multiple --fqan options for secondary FQANs\n");
-	fprintf(stdout," -r|--resourceid <URI>   XACML Resource identifier\n");
-	fprintf(stdout," -a|--actionid <URI>     XACML Action identifier\n");
-	fprintf(stdout," -t|--timeout <SEC>      Connection timeout in second (default 30s)\n");
-	fprintf(stdout," -x|--requestcontext     Show effective XACML Request context\n");
-	fprintf(stdout," -v|--verbose            Verbose\n");
-	fprintf(stdout," -q|--quiet              Turn off output\n");
-	fprintf(stdout," -d|--debug              Show debug information\n");
-	fprintf(stdout," -h|--help               This help\n");
-	fprintf(stdout," -V|--version            Display version and exit\n");
+	fprintf(stdout," -p|--pepd <URL>         PEPd endpoint URL. Add multiple --pepd options for failover.\n");
+	fprintf(stdout," -c|--certchain <FILE>   XACML Subject cert-chain: proxy or X509 file.\n");
+	fprintf(stdout," -s|--subjectid <DN>     XACML Subject identifier: user DN (format RFC2253).\n");
+	fprintf(stdout," -f|--fqan <FQAN>        XACML Subject voms-primary-fqan and voms-fqan\n");
+	fprintf(stdout,"                         Add multiple --fqan options for secondary FQANs.\n");
+	fprintf(stdout," -r|--resourceid <URI>   XACML Resource identifier.\n");
+	fprintf(stdout," -a|--actionid <URI>     XACML Action identifier.\n");
+	fprintf(stdout," -t|--timeout <SEC>      Connection timeout in second (default 30s).\n");
+	fprintf(stdout," -x|--requestcontext     Show effective XACML Request context.\n");
+	fprintf(stdout," -v|--verbose            Verbose.\n");
+	fprintf(stdout," -q|--quiet              Turn off output.\n");
+	fprintf(stdout," -d|--debug              Show debug information.\n");
+	fprintf(stdout," -h|--help               This help.\n");
+	fprintf(stdout," -V|--version            Display version and exit.\n");
+	fprintf(stdout,"TLS options:\n");
+	fprintf(stdout," --capath <DIR>          Directory containing the server PEM encoded CA certificates.\n");
+	fprintf(stdout," --cacert <FILE>         Server PEM encoded CA certificate filename.\n");
+	fprintf(stdout," --cert <FILE>           Client PEM encoded certificate filename.\n");
+	fprintf(stdout," --key <FILE>            Client PEM encoded private key filename.\n");
+	fprintf(stdout," --keypasswd <PASSWD>    Password of the client private key\n");
+	fprintf(stdout,"                         If the --keypasswd is omitted and the private key is encrypted,\n");
+	fprintf(stdout,"                         then you will be prompted for the password.\n");
+
 }
 
 /**
- * Main
+ * Main: pepcli
  */
 int main(int argc, char **argv) {
 	linkedlist_t * pepds= llist_create();
@@ -679,7 +764,7 @@ int main(int argc, char **argv) {
 	}
 	// parse arguments
 	int c;
-	while ((c= getopt_long(argc, argv, "dqvp:s:t:r:a:c:f:xhV", long_options, NULL)) != -1) {
+	while ((c= getopt_long(argc, argv, "dqvp:s:t:r:a:c:f:xhV1:2:3:4:5:", long_options, NULL)) != -1) {
 		switch(c) {
 		case 'd':
 			debug= 1;
@@ -751,6 +836,36 @@ int main(int argc, char **argv) {
 			show_version();
 			exit(E_OK);
 			break;
+		case '1':
+			show_debug("capath: %s",optarg);
+			if (strlen(optarg) > 0) {
+				capath_directory= optarg;
+			}
+			break;
+		case '2':
+			show_debug("cert: %s",optarg);
+			if (strlen(optarg) > 0) {
+				cert_filename= optarg;
+			}
+			break;
+		case '3':
+			show_debug("key: %s",optarg);
+			if (strlen(optarg) > 0) {
+				key_filename= optarg;
+			}
+			break;
+		case '4':
+			show_debug("keypasswd: %s",optarg);
+			if (strlen(optarg) > 0) {
+				key_password= optarg;
+			}
+			break;
+		case '5':
+			show_debug("cacert: %s",optarg);
+			if (strlen(optarg) > 0) {
+				cacert_filename= optarg;
+			}
+			break;
 		case '?':
             // getopt_long already printed an error message.
 			exit(E_OPTION);
@@ -779,6 +894,50 @@ int main(int argc, char **argv) {
 		exit(E_OPTION);        
     }
 
+    // TLS: check that --cert AND --key are both entered
+    if (cert_filename!=NULL && key_filename==NULL) {
+    	show_error("TLS option --cert <FILE> requires option --key <FILE>");
+    	exit(E_OPTION);
+    }
+    if (key_filename!=NULL && cert_filename==NULL) {
+    	show_error("TLS option --key <FILE> requires option --cert <FILE>");
+    	exit(E_OPTION);
+    }
+
+    // check files options (exists and readable)
+    if (certchain_filename!=NULL && !file_is_readable(certchain_filename)) {
+		show_error("the -c|--certchain %s does not exist or is not readable",cert_filename);
+		exit(E_CERTCHAIN);
+    }
+    if (cacert_filename!=NULL && !file_is_readable(cacert_filename)) {
+		show_error("the --cacert %s does not exist or is not readable",cacert_filename);
+		exit(E_CACERT);
+    }
+    if (capath_directory!=NULL && !file_is_readable(capath_directory)) {
+		show_error("the --capath %s does not exist or is not readable",capath_directory);
+		exit(E_CAPATH);
+    }
+    if (cert_filename!=NULL && !file_is_readable(cert_filename)) {
+		show_error("the --cert %s does not exist or is not readable",cert_filename);
+		exit(E_CERT);
+    }
+    if (key_filename!=NULL && !file_is_readable(key_filename)) {
+		show_error("the --key %s does not exist or is not readable",key_filename);
+		exit(E_KEY);
+    }
+
+    // check private key encryption password
+    if (key_filename!=NULL && key_is_encrypted(key_filename)) {
+    	// prompt for key passwd if not given as parameter
+		if (key_password==NULL) {
+			key_password= getpass("Key password: ");
+			if (strlen(key_password)==0) {
+				show_error("key is encrypted, empty password not valid");
+				exit(E_KEY);
+			}
+		}
+    }
+
 	// show parameters
 	int i= 0;
 	for(i= 0; i<pepds_l; i++) {
@@ -803,7 +962,22 @@ int main(int argc, char **argv) {
 			show_info("fqan: %s (primary)",fqan);
 		else
 			show_info("fqan: %s",fqan);
-
+	}
+	// show TLS options
+	if (cacert_filename!=NULL) {
+		show_info("cacert: %s", cacert_filename);
+	}
+	if (capath_directory!=NULL) {
+		show_info("capath: %s", capath_directory);
+	}
+	if (cert_filename!=NULL) {
+		show_info("cert: %s", cert_filename);
+	}
+	if (key_filename!=NULL) {
+		show_info("key: %s", key_filename);
+		if (key_password!=NULL) {
+			show_info("key passwd: %d chars",(int)strlen(key_password));
+		}
 	}
 
 	// read certchain file
@@ -855,11 +1029,55 @@ int main(int argc, char **argv) {
 			show_warn("failed to set PEP client timeout: %d: %s",timeout,pep_strerror(pep_rc));
 		}
 	}
-	// no SSL validation
-	show_debug("disable PEPd SSL validation");
-	pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_SSL_VALIDATION, 0);
-	if (pep_rc!=PEP_OK) {
-		show_warn("failed to disable PEPd SSL validation: %s",pep_strerror(pep_rc));
+
+	// TLS/SSL trust anchors and client authentication
+	if (capath_directory==NULL && cacert_filename==NULL) {
+		// no SSL validation
+		show_debug("no CA cert or path: PEPd SSL validation disabled");
+		pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_SSL_VALIDATION, 0);
+		if (pep_rc!=PEP_OK) {
+			show_warn("failed to disable PEPd SSL validation: %s",pep_strerror(pep_rc));
+		}
+	}
+	else {
+		// enable SSL validation + CApath trust anchors
+		show_debug("enabling PEPd SSL validation");
+		pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_SSL_VALIDATION, 1);
+		if (pep_rc!=PEP_OK) {
+			show_error("failed to enable PEPd SSL validation: %s",pep_strerror(pep_rc));
+		}
+	}
+
+	if (capath_directory!=NULL) {
+		show_debug("setting server trust anchors CA path: %s",capath_directory);
+		pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_SERVER_CAPATH,capath_directory);
+		if (pep_rc!=PEP_OK) {
+			show_error("failed to set server CA path: %s: %s",capath_directory,pep_strerror(pep_rc));
+		}
+	}
+	if (cacert_filename!=NULL) {
+		show_debug("setting server trust anchor certificate: %s",cacert_filename);
+		pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_SERVER_CERT,cacert_filename);
+		if (pep_rc!=PEP_OK) {
+			show_error("failed to set server cert: %s: %s",cacert_filename,pep_strerror(pep_rc));
+		}
+	}
+	if (cert_filename!=NULL && key_filename!=NULL) {
+		show_debug("enabling TLS client authN: %s, %s",cert_filename,key_filename);
+		pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_CLIENT_CERT,cert_filename);
+		if (pep_rc!=PEP_OK) {
+			show_error("failed to set client cert: %s: %s",cert_filename,pep_strerror(pep_rc));
+		}
+		pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_CLIENT_KEY,key_filename);
+		if (pep_rc!=PEP_OK) {
+			show_error("failed to set client key: %s: %s",key_filename,pep_strerror(pep_rc));
+		}
+		if (key_password!=NULL) {
+			pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_CLIENT_KEYPASSWORD,key_password);
+			if (pep_rc!=PEP_OK) {
+				show_error("failed to set client key password: %s (%s): %s",key_password,key_filename,pep_strerror(pep_rc));
+			}
+		}
 	}
 
 	show_debug("create XACML subject");
