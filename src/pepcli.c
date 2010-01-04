@@ -705,7 +705,7 @@ static int show_human_response(xacml_response_t * response) {
 }
 
 static void show_version() {
-	fprintf(stdout,"PEP-C CLI v." PACKAGE_VERSION ", PEP-C library v.%s\n",pep_version());
+	fprintf(stdout,"PEP-C CLI v." PACKAGE_VERSION ", PEP-C client library v.%s\n",pep_version());
 }
 
 /**
