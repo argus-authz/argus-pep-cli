@@ -1,5 +1,6 @@
 PEP-C-CLI 1.3.0
 ---------------
+* implements Grid WN Authorization Profile 1.0
 * pepcli: SSL/TLS options added: --cert FILE, --key FILE, --keypasswd PASSWD, --capath DIR and --cacert FILE
 * man: man page updated.
 
