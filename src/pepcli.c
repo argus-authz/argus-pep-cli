@@ -251,7 +251,7 @@ static xacml_subject_t * create_xacml_subject_id(const char * x500dn) {
 }
 
 /**
- * Creates a XACML Subject cert-chain
+ * Creates a AuthZ Interop Profile XACML Subject cert-chain
  * @param certchain the PEM blocks of the certificate chain
  * @return pointer to the XACML Subject created or @c NULL on error.
  */
@@ -272,6 +272,81 @@ static xacml_subject_t * create_xacml_subject_certchain(const char * certchain) 
 	xacml_attribute_setdatatype(subject_attr_id,XACML_DATATYPE_BASE64BINARY);
 	xacml_attribute_addvalue(subject_attr_id,certchain);
 	xacml_subject_addattribute(subject,subject_attr_id);
+	return subject;
+}
+
+/**
+ * Creates a Grid WN AuthZ Profile XACML Subject key-info
+ * @param certchain the PEM blocks of the certificate chain
+ * @return pointer to the XACML Subject created or @c NULL on error.
+ */
+static xacml_subject_t * create_xacml_subject_keyinfo(const char * certchain) {
+	if (certchain==NULL) return NULL;
+	// Subject cert-chain
+	xacml_subject_t * subject= xacml_subject_create();
+	if (subject==NULL) {
+		show_error("can not allocate XACML Subject");
+		return NULL;
+	}
+	xacml_attribute_t * subject_attr_id= xacml_attribute_create(XACML_SUBJECT_KEY_INFO);
+	if (subject_attr_id==NULL) {
+		show_error("can not allocate XACML Subject/Attribute: %s",XACML_SUBJECT_KEY_INFO);
+		xacml_subject_delete(subject);
+		return NULL;
+	}
+	xacml_attribute_setdatatype(subject_attr_id,XACML_DATATYPE_STRING);
+	xacml_attribute_addvalue(subject_attr_id,certchain);
+	xacml_subject_addattribute(subject,subject_attr_id);
+	return subject;
+}
+
+/**
+ * Creates a XACML Subject with Grid WN AuthZ @b fqan/primary and @b fqan Attributes
+ * @param fqans_list the list of FQANs, the first one in the list is the fqan/primary.
+ * @return pointer to the XACML Subject created or @c NULL on empty FQANs list or on error.
+ */
+static xacml_subject_t * create_xacml_subject_fqans(linkedlist_t * fqans_list) {
+	if (fqans_list==NULL) return NULL;
+	// empty list
+	size_t fqans_l= llist_length(fqans_list);
+	if (fqans_l<1) return NULL;
+
+	xacml_subject_t * subject= xacml_subject_create();
+	if (subject==NULL) {
+		show_error("can not allocate XACML Subject");
+		return NULL;
+	}
+	int i= 0;
+	// all FQANs are fqan Attributes
+	xacml_attribute_t * fqan_attr= xacml_attribute_create(XACML_GRIDWN_ATTRIBUTE_FQAN);
+	if (fqan_attr==NULL) {
+		show_error("can not allocate XACML Subject/Attribute: %s",XACML_GRIDWN_ATTRIBUTE_FQAN);
+		xacml_subject_delete(subject);
+		return NULL;
+	}
+	xacml_attribute_setdatatype(fqan_attr,XACML_GRIDWN_DATATYPE_FQAN);
+	for (i= 0; i<fqans_l; i++) {
+		char * fqan= (char *)llist_get(fqans_list,i);
+		if (fqan==NULL) {
+			show_error("NULL pointer in FQANs list at: %d",i);
+			xacml_subject_delete(subject);
+			return NULL;
+		}
+		xacml_attribute_addvalue(fqan_attr,fqan);
+		if (i==0) {
+			// fist FQAN is the fqan/primary Attribute
+			xacml_attribute_t * fqan_primary_attr= xacml_attribute_create(XACML_GRIDWN_ATTRIBUTE_FQAN_PRIMARY);
+			if (fqan_primary_attr==NULL) {
+				show_error("can not allocate XACML Subject/Attribute: %s",XACML_GRIDWN_ATTRIBUTE_FQAN_PRIMARY);
+				xacml_subject_delete(subject);
+				return NULL;
+			}
+			xacml_attribute_setdatatype(fqan_primary_attr,XACML_GRIDWN_DATATYPE_FQAN);
+			xacml_attribute_addvalue(fqan_primary_attr,fqan);
+			xacml_subject_addattribute(subject,fqan_primary_attr);
+		}
+	}
+	xacml_subject_addattribute(subject,fqan_attr);
 	return subject;
 }
 
@@ -400,6 +475,29 @@ static xacml_action_t * create_xacml_action_id(const char * actionid) {
 }
 
 /**
+ * Create a Grid WN AuthZ Profile XACML Environment with profile-id Attribute.
+ * @param profile The Environment profile-id value
+ * @return pointer to the XACML Environment created or @c NULL on error.
+ */
+static xacml_environment_t * create_xacml_environment_profile_id(const char * profile) {
+	if (profile==NULL) return NULL;
+	xacml_environment_t * env= xacml_environment_create();
+	if (env==NULL) {
+		show_error("can not allocate XACML Environment");
+		return NULL;
+	}
+	xacml_attribute_t * env_attr= xacml_attribute_create(XACML_GRIDWN_ATTRIBUTE_PROFILE_ID);
+	if (env_attr==NULL) {
+		show_error("can not allocate XACML Environment/Attribute: %s",XACML_GRIDWN_ATTRIBUTE_PROFILE_ID);
+		xacml_environment_delete(env);
+		return NULL;
+	}
+	xacml_attribute_addvalue(env_attr,profile);
+	xacml_environment_addattribute(env,env_attr);
+	return env;
+}
+
+/**
  * Creates a XACML Request with a Subject, a Resource and a Action.
  */
 static xacml_request_t * create_xacml_request(xacml_subject_t * subject, xacml_resource_t * resource, xacml_action_t * action) {
@@ -421,6 +519,12 @@ static xacml_request_t * create_xacml_request(xacml_subject_t * subject, xacml_r
 	if (action!=NULL) {
 		xacml_request_setaction(request,action);
 	}
+	// add Grid WN AuthZ Profile in Env
+	xacml_environment_t * environment= create_xacml_environment_profile_id(XACML_GRIDWN_PROFILE_VERSION);
+	if (environment) {
+		xacml_request_setenvironment(request,environment);
+	}
+
 	return request;
 }
 
@@ -608,11 +712,8 @@ static int show_xacml_response(xacml_response_t * response) {
 			for (k= 0; k<attrs_l; k++) {
 				xacml_attributeassignment_t * attr= xacml_obligation_getattributeassignment(obligation,k);
 				show_info("response.result[%d].obligation[%d].attributeassignment[%d].id= %s",i,j,k,xacml_attributeassignment_getid(attr));
-				size_t values_l= xacml_attributeassignment_values_length(attr);
-				int l= 0;
-				for (l= 0; l<values_l; l++) {
-					show_info("response.result[%d].obligation[%d].attributeassignment[%d].value[%d]= %s",i,j,k,l,xacml_attributeassignment_getvalue(attr,l));
-				}
+				show_info("response.result[%d].obligation[%d].attributeassignment[%d].datatype= %s",i,j,k,xacml_attributeassignment_getdatatype(attr));
+				show_info("response.result[%d].obligation[%d].attributeassignment[%d].value= %s",i,j,k,xacml_attributeassignment_getvalue(attr));
 			}
 		}
 	}
@@ -623,12 +724,12 @@ static int show_xacml_response(xacml_response_t * response) {
  * Shows a human readable response.
  */
 static int show_human_response(xacml_response_t * response) {
+	int i, j, k, l;
 	if (response == NULL) {
 		show_error("show_response: response is NULL");
 		return 1;
 	}
 	size_t results_l= xacml_response_results_length(response);
-	int i= 0;
 	for (i= 0; i<results_l; i++) {
 		xacml_result_t * result= xacml_response_getresult(response,i);
 		const char * resource_id= xacml_result_getresourceid(result);
@@ -649,57 +750,50 @@ static int show_human_response(xacml_response_t * response) {
 			}
 		}
 		size_t obligations_l= xacml_result_obligations_length(result);
-		if (obligations_l==0i && decision==XACML_DECISION_PERMIT) {
+		if (obligations_l==0 && decision==XACML_DECISION_PERMIT) {
 			fprintf(stdout,"No Obligation received\n");
 		}
-		int j, k, l;
 		for (j= 0; j<obligations_l; j++) {
 			xacml_obligation_t * obligation= xacml_result_getobligation(result,j);
 			xacml_fulfillon_t fulfillon= xacml_obligation_getfulfillon(obligation);
 			if (fulfillon == decision) {
 				const char * obligation_id= xacml_obligation_getid(obligation);
 				size_t attrs_l= xacml_obligation_attributeassignments_length(obligation);
-				if (strcmp(XACML_AUTHZINTEROP_OBLIGATION_SECONDARY_GIDS,obligation_id)==0 && attrs_l>0) {
-					fprintf(stdout,"Secondary GIDs=");
+				if (strcmp(XACML_GRIDWN_OBLIGATION_LOCAL_ENVIRONMENT_MAP,obligation_id)==0) {
+					fprintf(stdout,"Obligation: %s (caller should do local account mapping)\n",obligation_id);
 				}
-				else if (strcmp(X_POSIX_ACCOUNT_MAP,obligation_id)==0) {
-					fprintf(stdout,"Obligation(%s): Application should do the POSIX account mapping\n",X_POSIX_ACCOUNT_MAP);
-				}
-				for (k= 0; k<attrs_l; k++) {
-					xacml_attributeassignment_t * attr= xacml_obligation_getattributeassignment(obligation,k);
-					const char * attr_id= xacml_attributeassignment_getid(attr);
-					size_t values_l= xacml_attributeassignment_values_length(attr);
-					for (l= 0; l<values_l; l++) {
-						const char * value= xacml_attributeassignment_getvalue(attr,l);
-						if (strcmp(XACML_AUTHZINTEROP_OBLIGATION_UIDGID,obligation_id)==0) {
-							if (strcmp(XACML_AUTHZINTEROP_OBLIGATION_ATTR_POSIX_UID,attr_id)==0) {
-								fprintf(stdout,"UID=%s\n",value);
-							}
-							else if (strcmp(XACML_AUTHZINTEROP_OBLIGATION_ATTR_POSIX_GID,attr_id)==0) {
-								fprintf(stdout,"GID=%s\n",value);
-							}
+				else if (strcmp(XACML_GRIDWN_OBLIGATION_LOCAL_ENVIRONMENT_MAP_POSIX,obligation_id)==0) {
+					size_t n_groups= 0;
+					char ** groups= calloc(NGROUPS_MAX,sizeof(char *));
+					fprintf(stdout,"Obligation: %s (caller should resolve POSIX account mapping)\n",obligation_id);
+					for (k= 0; k<attrs_l; k++) {
+						xacml_attributeassignment_t * attr= xacml_obligation_getattributeassignment(obligation,k);
+						const char * attr_id= xacml_attributeassignment_getid(attr);
+						const char * attr_value= xacml_attributeassignment_getvalue(attr);
+						if (strcmp(XACML_GRIDWN_ATTRIBUTE_USER_ID,attr_id)==0) {
+							fprintf(stdout,"Username: %s\n",attr_value);
 						}
-						else if (strcmp(XACML_AUTHZINTEROP_OBLIGATION_SECONDARY_GIDS,obligation_id)==0) {
-							if (strcmp(XACML_AUTHZINTEROP_OBLIGATION_ATTR_POSIX_GID,attr_id)==0) {
-								fprintf(stdout,"%s ",value);
-								if (k==(attrs_l - 1))
-									fprintf(stdout,"\n");
-							}
+						else if (strcmp(XACML_GRIDWN_ATTRIBUTE_GROUP_ID_PRIMARY,attr_id)==0) {
+							fprintf(stdout,"Group: %s\n",attr_value);
 						}
-						else if (strcmp(XACML_AUTHZINTEROP_OBLIGATION_USERNAME,obligation_id)==0) {
-							if (strcmp(XACML_AUTHZINTEROP_OBLIGATION_ATTR_USERNAME,attr_id)==0) {
-								fprintf(stdout,"Username=%s\n",value);
-							}
-						}
-						else {
-							fprintf(stdout,"Obligation(%s): %s=%s\n",obligation_id,attr_id,value);
+						else if (strcmp(XACML_GRIDWN_ATTRIBUTE_GROUP_ID,attr_id)==0) {
+							groups[n_groups++]= (char *)attr_value;
 						}
 					}
+					if (n_groups>0) {
+						fprintf(stdout,"Secondary Groups:");
+						for (l= 0; l<n_groups; l++) {
+							fprintf(stdout," %s",groups[l]);
+						}
+						fprintf(stdout,"\n");
+					}
+					free(groups);
+				}
+				else {
+					fprintf(stdout,"Obligation: %s\n",obligation_id);
 				}
 			}
 		}
-
-
 	}
 	return 0;
 }
@@ -723,7 +817,7 @@ static void show_help() {
 	fprintf(stdout," -p|--pepd <URL>         PEPd endpoint URL. Add multiple --pepd options for failover.\n");
 	fprintf(stdout," -c|--certchain <FILE>   XACML Subject cert-chain: proxy or X509 file.\n");
 	fprintf(stdout," -s|--subjectid <DN>     XACML Subject identifier: user DN (format RFC2253).\n");
-	fprintf(stdout," -f|--fqan <FQAN>        XACML Subject voms-primary-fqan and voms-fqan\n");
+	fprintf(stdout," -f|--fqan <FQAN>        XACML Subject primary FQAN and FQANs\n");
 	fprintf(stdout,"                         Add multiple --fqan options for secondary FQANs.\n");
 	fprintf(stdout," -r|--resourceid <URI>   XACML Resource identifier.\n");
 	fprintf(stdout," -a|--actionid <URI>     XACML Action identifier.\n");
@@ -1083,10 +1177,10 @@ int main(int argc, char **argv) {
 	// subject-id, cert-chain and VOMS FQANs are all one Subject!!!
 	xacml_subject_t * subject_id= create_xacml_subject_id(subjectid);
 	merge_xacml_subject_attrs_into(subject_id,subject);
-	xacml_subject_t * subject_certchain= create_xacml_subject_certchain(certchain);
-	merge_xacml_subject_attrs_into(subject_certchain,subject);
-	xacml_subject_t * subject_voms_fqan= create_xacml_subject_voms_fqans(fqans);
-	merge_xacml_subject_attrs_into(subject_voms_fqan,subject);
+	xacml_subject_t * subject_keyinfo= create_xacml_subject_keyinfo(certchain);
+	merge_xacml_subject_attrs_into(subject_keyinfo,subject);
+	xacml_subject_t * subject_fqans= create_xacml_subject_fqans(fqans);
+	merge_xacml_subject_attrs_into(subject_fqans,subject);
 	// resource-id and action-id
 	xacml_resource_t * resource= create_xacml_resource_id(resourceid);
 	xacml_action_t * action= create_xacml_action_id(actionid);
@@ -1095,6 +1189,17 @@ int main(int argc, char **argv) {
 	if (request==NULL) {
 		show_error("failed to create XACML request");
 		exit(E_XACMLREQ);
+	}
+
+	// XXX test PIP and OH
+	if (debug && verbose) {
+		show_debug("debug is on: enabling PIP and OH profile adapters: %s and %s", authzinterop2gridwn_adapter_pip->id,gridwn2authzinterop_adapter_oh->id);
+		if((pep_rc= pep_addpip(authzinterop2gridwn_adapter_pip)) != PEP_OK) {
+			show_error("failed to enable PIP profile adapter: %s", pep_strerror(pep_rc));
+		}
+		if((pep_rc= pep_addobligationhandler(gridwn2authzinterop_adapter_oh)) != PEP_OK) {
+			show_error("failed to enable OH profile adapter: %s", pep_strerror(pep_rc));
+		}
 	}
 
 	// submit request
