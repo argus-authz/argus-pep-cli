@@ -125,16 +125,13 @@ static const char X_POSIX_ACCOUNT_MAP[]= "x-posix-account-map";
  * @retun 1 (true) if exists and readable, 0 (false) otherwise
  */
 static int file_is_readable(const char * filename) {
-	int fexists= 0;
 	FILE * file= fopen(filename,"r");
 	if (file==NULL) {
 		show_error("%s: %s", filename, strerror(errno));
-		fexists= 0;
+		return 0;
 	}
-	else
-		fexists= 1;
 	fclose(file);
-	return fexists;
+	return 1;
 }
 
 /**
@@ -144,19 +141,18 @@ static int file_is_readable(const char * filename) {
  * @retun 1 (true) if the private key is encrypted, 0 (false) otherwise
  */
 static int key_is_encrypted(const char * keyfile) {
-	int encrypted= 0;
 	char line[1024];
 	FILE * file= fopen(keyfile,"r");
 	if (file==NULL) {
 		show_error("%s: %s", keyfile, strerror(errno));
+		return 0;
 	}
-	else {
-		while(fgets(line,1024,file) != NULL) {
-			if (strncmp(KEY_PROCTYPE_ENCRYPTED,line,strlen(KEY_PROCTYPE_ENCRYPTED)) == 0) {
-				show_debug("key %s is encrypted", keyfile);
-				encrypted= 1;
-				break;
-			}
+	int encrypted= 0;
+	while(fgets(line,1024,file) != NULL) {
+		if (strncmp(KEY_PROCTYPE_ENCRYPTED,line,strlen(KEY_PROCTYPE_ENCRYPTED)) == 0) {
+			show_debug("key %s is encrypted", keyfile);
+			encrypted= 1;
+			break;
 		}
 	}
 	fclose(file);
@@ -998,7 +994,7 @@ int main(int argc, char **argv) {
 
     // check files options (exists and readable)
     if (certchain_filename!=NULL && !file_is_readable(certchain_filename)) {
-		show_error("the -c|--certchain %s does not exist or is not readable",cert_filename);
+		show_error("the -c|--certchain %s does not exist or is not readable",certchain_filename);
 		exit(E_CERTCHAIN);
     }
     if (cacert_filename!=NULL && !file_is_readable(cacert_filename)) {
