@@ -994,7 +994,7 @@ int main(int argc, char **argv) {
 
     // check files options (exists and readable)
     if (certchain_filename!=NULL && !file_is_readable(certchain_filename)) {
-		show_error("the -c|--certchain %s does not exist or is not readable",cert_filename);
+		show_error("the -c|--certchain %s does not exist or is not readable",certchain_filename);
 		exit(E_CERTCHAIN);
     }
     if (cacert_filename!=NULL && !file_is_readable(cacert_filename)) {
