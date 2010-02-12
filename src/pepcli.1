@@ -30,7 +30,7 @@ options for failover (executed in order).
 Set the
 .B mandatory
 , and mutually exclusive with the \-\-subjectid option,  XACML Subject attribute identifier
-.B cert\-chain
+.B key\-info
 with the value read from
 .IR FILE .
 The 
@@ -53,9 +53,9 @@ format.
 .TP
 .BI "\-f" " FQAN" ", \-\-fqan" " FQAN"
 Set the XACML Subject attribute identifiers
-.B voms\-primary\-fqan
+.B fqan
 and
-.B voms\-fqan
+.B fqan/primary
 with the value(s) set as the
 .I FQAN 
 argument.
@@ -64,11 +64,11 @@ Add multiple
 options for secondary FQANs. The first given
 .BI "\-\-fqan" " FQAN"
 option will always be the 
-.B voms\-primary\-fqan
+.B fqan/primary
 attribute value. All specified
 .BI "\-\-fqan" " FQAN"
 option arguments will be add into the 
-.B voms\-fqan
+.B fqan
 multi-valued attribute values.
 .TP
 .BI "\-r" " URI" ", \-\-resourceid" " URI"
@@ -111,12 +111,14 @@ Display a short help text.
 .BR "\-V" , " \-\-version"
 Display the PEP-C CLI and library versions and exit.
 .SH SSL/TLS OPTIONS
-If the connection to the PEP daemon requires HTTPS and/or TLS client authentication, you can specify the following TLS options:
+If the connection to the PEP daemon requires HTTPS and/or TLS client authentication, you should specify the following TLS options:
 .TP
 .BI "\-\-capath" " DIR"
 Set the directory
 .I DIR
-containing the server trusted CA certificates (CA bundle).
+containing the server trusted CA certificates (CA bundle), typically the
+.I /etc/grid-security/certificates
+directory.
 .TP
 .BI "\-\-cacert" " FILE"
 Set the server PEM encoded
@@ -134,8 +136,14 @@ Set the client PEM encoded private key
 used for the TLS client authentication.
 .TP
 .BI "\-\-keypasswd" " PASSWORD"
-Set the client private key password. 
+Optionally, set the client private key password. 
 If this option is omitted and the private key is encrypted, you will be prompt for a password.
+.SH XACML PROFILE
+The
+.B pepcli
+command implements the 
+.I XACML Grid Worker Node Authorization Profile (v.1.0)
+and uses the identifiers described in this profile.
 .SH OPTIONS NOTES
 Using the
 .B pepcli
@@ -147,7 +155,7 @@ options can give indeterminate results if the argument
 .I PROXY_FILE
 is a proxy certificate with VOMS AC. 
 The PEP daemon X.509 PIP will populate the incoming XACML Request with the proxy certificate VOMS AC into XACML Subject
-.BR "voms-primary-fqan" " and" " voms-fqan" 
+.BR "fqan/primary" " and" " fqan" 
 attributes, therefore, these attributes will be duplicated, resulting in possible inconsistency.
 .SH EXIT STATUS
 The
@@ -203,3 +211,7 @@ https://twiki.cern.ch/twiki/bin/view/EGEE/AuthorizationFramework
 .TP
 .I Argus PEP-C command line interface 
 https://twiki.cern.ch/twiki/bin/view/EGEE/AuthZPEPCCLI
+.TP
+.I XACML Grid Worker Node Authorization Profile, Version 1.0
+http://edms.cern.ch/document/1058175
+
