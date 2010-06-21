@@ -34,8 +34,8 @@
 #endif
 
 #include "pep/pep.h"
-#include "pep/buffer.h"
-#include "pep/linkedlist.h"
+#include "util/buffer.h"
+#include "util/linkedlist.h"
 
 // logging prototypes: log.c
 void show_info(const char * format, ...);
