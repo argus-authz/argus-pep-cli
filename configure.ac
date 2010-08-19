@@ -18,7 +18,7 @@
 # $Id: configure.ac 1299 2009-10-15 15:29:34Z vtschopp $
 #
 
-AC_INIT(glite-authz-pep-c-cli, 1.3.0, grid@switch.ch)
+AC_INIT(glite-authz-pep-c-cli, 1.3.1, grid@switch.ch)
 AC_CONFIG_AUX_DIR(project)
 AC_CONFIG_MACRO_DIR(project)
 

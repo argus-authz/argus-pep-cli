@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2009 Members of the EGEE Collaboration.
+ * Copyright (c) Members of the EGEE Collaboration. 2008.
  * See http://www.eu-egee.org/partners for details on the copyright holders.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,8 +34,8 @@
 #endif
 
 #include "pep/pep.h"
-#include "pep/buffer.h"
-#include "pep/linkedlist.h"
+#include "util/buffer.h"
+#include "util/linkedlist.h"
 
 // logging prototypes: log.c
 void show_info(const char * format, ...);
