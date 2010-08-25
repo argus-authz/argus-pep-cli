@@ -489,6 +489,7 @@ static xacml_environment_t * create_xacml_environment_profile_id(const char * pr
 		return NULL;
 	}
 	xacml_attribute_addvalue(env_attr,profile);
+    xacml_attribute_setdatatype(env_attr,XACML_DATATYPE_ANYURI);
 	xacml_environment_addattribute(env,env_attr);
 	return env;
 }
