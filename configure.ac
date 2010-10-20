@@ -55,7 +55,9 @@ AC_GLITE
 AC_MSG_NOTICE([libdir for $host: $libdir])
 
 # Checks for PEP-C headers and library
-# will automatically add -lpep-c in LDFLAGS
+#
+# use environment variable PKG_CONFIG_PATH=$libdir/pkgconfig
+#
 PKG_CHECK_MODULES(LIBARGUS_PEP,[argus-pep],
     [
         AC_MSG_NOTICE([LIBARGUS_PEP_CFLAGS=$LIBARGUS_PEP_CFLAGS])
