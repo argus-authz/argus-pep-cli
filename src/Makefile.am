@@ -33,7 +33,7 @@ pepcli_CFLAGS = \
 pepcli_LDFLAGS = \
     $(GLITE_LDFLAGS)
     
-pepcli_LIBADD = \
+pepcli_LDADD = \
     $(LIBARGUS_PEP_LIBS)
 
 # man page
