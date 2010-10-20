@@ -21,7 +21,20 @@
 # PEP-C client CLI exec
 #
 bin_PROGRAMS = pepcli
-pepcli_SOURCES = pepcli.c log.c
+
+pepcli_SOURCES = \
+    pepcli.c \
+    log.c
+
+pepcli_CFLAGS = \
+    $(GLITE_CFLAGS) \
+    $(LIBARGUS_PEP_CFLAGS)
+    
+pepcli_LDFLAGS = \
+    $(GLITE_LDFLAGS)
+    
+pepcli_LIBADD = \
+    $(LIBARGUS_PEP_LIBS)
 
 # man page
 man1_MANS = pepcli.1
