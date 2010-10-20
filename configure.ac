@@ -60,11 +60,11 @@ CFLAGS="$CFLAGS $GLITE_CFLAGS"
 AC_MSG_NOTICE([CFLAGS=$CFLAGS])
 LDFLAGS="$LDFLAGS $GLITE_LDFLAGS"
 AC_MSG_NOTICE([LDFLAGS=$LDFLAGS])
-AC_CHECK_HEADER([pep/pep.h],,[AC_MSG_ERROR(can not find pep-c library header)])
-AC_CHECK_LIB(pep-c,pep_initialize)
-AC_CHECK_LIB(pep-c,pep_version)
+AC_CHECK_HEADER([pep/pep.h],,[AC_MSG_ERROR(Argus PEP library header pep/pep.h not found)])
+AC_CHECK_LIB(argus_pep,pep_initialize)
+AC_CHECK_LIB(argus_pep,pep_version)
 # PEP-C lib version >= 1.3 
-AC_CHECK_LIB(pep-c,xacml_attributeassignment_setvalue)
+AC_CHECK_LIB(argus_pep,xacml_attributeassignment_setvalue)
 
 # Checks for header files.
 AC_HEADER_STDC
