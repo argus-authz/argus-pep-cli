@@ -50,8 +50,6 @@ fi
 #    ;;
 #esac
 
-# bootstrap glite.m4 (--with-glite-location=/opt/glite)
-AC_GLITE
 AC_MSG_NOTICE([libdir for $host: $libdir])
 
 # Checks for PEP-C headers and library
@@ -64,6 +62,8 @@ PKG_CHECK_MODULES(LIBARGUS_PEP_API,[libargus-pep-api >= 1.3],
         AC_MSG_NOTICE([LIBARGUS_PEP_API_LIBS=$LIBARGUS_PEP_API_LIBS])
     ],
     [
+        # bootstrap glite.m4 (--with-glite-location=/opt/glite)
+        AC_GLITE
         CFLAGS="$CFLAGS $GLITE_CFLAGS"
         AC_MSG_NOTICE([CFLAGS=$CFLAGS])
         LDFLAGS="$LDFLAGS $GLITE_LDFLAGS"
