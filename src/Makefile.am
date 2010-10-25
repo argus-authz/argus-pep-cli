@@ -28,13 +28,13 @@ pepcli_SOURCES = \
 
 pepcli_CFLAGS = \
     $(GLITE_CFLAGS) \
-    $(ARGUS_PEP_CFLAGS)
+    $(LIBARGUS_PEP_API_CFLAGS)
     
 pepcli_LDFLAGS = \
     $(GLITE_LDFLAGS)
     
 pepcli_LDADD = \
-    $(ARGUS_PEP_LIBS)
+    $(LIBARGUS_PEP_API_LIBS)
 
 # man page
 man1_MANS = pepcli.1
