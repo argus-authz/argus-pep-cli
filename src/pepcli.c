@@ -1131,10 +1131,15 @@ int main(int argc, char **argv) {
 	}
 	else {
 		// enable SSL validation + CApath trust anchors
-		show_debug("enabling PEPd SSL validation");
+		show_debug("enabling peers SSL validation");
 		pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_SSL_VALIDATION, 1);
 		if (pep_rc!=PEP_OK) {
 			show_error("failed to enable PEPd SSL validation: %s",pep_strerror(pep_rc));
+		}
+		show_debug("setting SSL ciphers: 'DEFAULT:-ECDH' (OpenSSL 1.0.0 bug fix)");
+		pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_SSL_CIPHER_LIST, "DEFAULT:-ECDH");
+		if (pep_rc!=PEP_OK) {
+			show_error("failed to set SSL ciphers: %s",pep_strerror(pep_rc));
 		}
 	}
 
