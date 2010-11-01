@@ -56,7 +56,7 @@ AC_MSG_NOTICE([libdir for $host: $libdir])
 #
 # use environment variable PKG_CONFIG_PATH=$libdir/pkgconfig
 #
-PKG_CHECK_MODULES(LIBARGUS_PEP_API,[libargus-pep-api >= 1.3],
+PKG_CHECK_MODULES(LIBARGUS_PEP_API,[libargus-pep-api >= 1.3.2],
     [
         AC_MSG_NOTICE([LIBARGUS_PEP_API_CFLAGS=$LIBARGUS_PEP_API_CFLAGS])
         AC_MSG_NOTICE([LIBARGUS_PEP_API_LIBS=$LIBARGUS_PEP_API_LIBS])
