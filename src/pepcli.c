@@ -31,6 +31,7 @@
 #include "config.h"  /* PACKAGE_NAME and PACKAGE_VERSION const */
 #else
 #define PACKAGE_VERSION "0.0.0"
+#define PACKAGE_NAME "pepcli"
 #endif
 
 #include "pep/pep.h"
@@ -796,7 +797,7 @@ static int show_human_response(xacml_response_t * response) {
 }
 
 static void show_version() {
-	fprintf(stdout,"PEP CLI v." PACKAGE_VERSION ", PEP API v.%s\n",pep_version());
+	fprintf(stdout,PACKAGE_NAME " v." PACKAGE_VERSION ", %s v.%s\n",pep_version_name(),pep_version());
 }
 
 /**

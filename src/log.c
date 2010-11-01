@@ -93,24 +93,24 @@ void log_handler_pep(int level, const char * format, va_list args) {
 	if (verbose || debug) {
 		switch (level) {
 		case 0:
-			fprintf(stderr,"libpep-c:ERROR: ");
+			fprintf(stderr,"libargus_pep_api:ERROR: ");
 			vfprintf(stderr,format,args);
 			fprintf(stderr,"\n");
 			break;
 		case 1:
-			fprintf(stderr,"libpep-c:WARN: ");
+			fprintf(stderr,"libargus_pep_api:WARN: ");
 			vfprintf(stderr,format,args);
 			fprintf(stderr,"\n");
 			break;
 		case 2:
-			fprintf(stderr,"libpep-c: ");
+			fprintf(stderr,"libargus_pep_api: ");
 			vfprintf(stderr,format,args);
 			fprintf(stderr,"\n");
 			break;
 		default:
 			// all other message are debug!?!
 			if (debug) {
-				fprintf(stderr,"libpep-c:DEBUG: ");
+				fprintf(stderr,"libargus_pep_api:DEBUG: ");
 				vfprintf(stderr,format,args);
 				fprintf(stderr,"\n");
 			}
