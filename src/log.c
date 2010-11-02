@@ -28,93 +28,93 @@ extern int quiet;
  * local logging handler
  */
 static void _vfprintf(FILE * fd, const char * level, const char * format, va_list args) {
-	int BUFFER_SIZE= 1024;
-	char BUFFER[BUFFER_SIZE];
-	memset(BUFFER,0,BUFFER_SIZE);
-	size_t size= BUFFER_SIZE;
-	strncat(BUFFER,level,size);
-	size= size - strlen(BUFFER);
-	strncat(BUFFER,": ",size);
-	size= size - strlen(BUFFER);
-	strncat(BUFFER,format,size);
-	size= size - strlen(BUFFER);
-	strncat(BUFFER,"\n",size);
-	vfprintf(fd,BUFFER,args);
+    int BUFFER_SIZE= 1024;
+    char BUFFER[BUFFER_SIZE];
+    memset(BUFFER,0,BUFFER_SIZE);
+    size_t size= BUFFER_SIZE;
+    strncat(BUFFER,level,size);
+    size= size - strlen(BUFFER);
+    strncat(BUFFER,": ",size);
+    size= size - strlen(BUFFER);
+    strncat(BUFFER,format,size);
+    size= size - strlen(BUFFER);
+    strncat(BUFFER,"\n",size);
+    vfprintf(fd,BUFFER,args);
 }
 
 /*
  * Logs an INFO message on stdout
  */
 void show_info(const char * format, ...) {
-	if (verbose && !quiet) {
-		va_list args;
-		va_start(args,format);
-		_vfprintf(stdout,"pepcli",format,args);
-		va_end(args);
-	}
+    if (verbose && !quiet) {
+        va_list args;
+        va_start(args,format);
+        _vfprintf(stdout,"pepcli",format,args);
+        va_end(args);
+    }
 }
 
 /*
  * Logs an ERROR message on stderr
  */
 void show_error(const char * format, ...) {
-	va_list args;
-	va_start(args,format);
-	_vfprintf(stderr,"pepcli:ERROR",format,args);
-	va_end(args);
+    va_list args;
+    va_start(args,format);
+    _vfprintf(stderr,"pepcli:ERROR",format,args);
+    va_end(args);
 }
 
 /*
  * Logs a WARN message on stderr
  */
 void show_warn(const char * format, ...) {
-	va_list args;
-	va_start(args,format);
-	_vfprintf(stderr,"pepcli:WARN",format,args);
-	va_end(args);
+    va_list args;
+    va_start(args,format);
+    _vfprintf(stderr,"pepcli:WARN",format,args);
+    va_end(args);
 }
 
 /*
  * Logs an DEBUG message on stdout
  */
 void show_debug(const char * format, ...) {
-	if (debug) {
-		va_list args;
-		va_start(args,format);
-		_vfprintf(stdout,"pepcli:DEBUG",format,args);
-		va_end(args);
-	}
+    if (debug) {
+        va_list args;
+        va_start(args,format);
+        _vfprintf(stdout,"pepcli:DEBUG",format,args);
+        va_end(args);
+    }
 }
 
 /*
  * PEP-C library logging callback function
  */
 void log_handler_pep(int level, const char * format, va_list args) {
-	if (verbose || debug) {
-		switch (level) {
-		case 0:
-			fprintf(stderr,"libargus_pep_api:ERROR: ");
-			vfprintf(stderr,format,args);
-			fprintf(stderr,"\n");
-			break;
-		case 1:
-			fprintf(stderr,"libargus_pep_api:WARN: ");
-			vfprintf(stderr,format,args);
-			fprintf(stderr,"\n");
-			break;
-		case 2:
-			fprintf(stderr,"libargus_pep_api: ");
-			vfprintf(stderr,format,args);
-			fprintf(stderr,"\n");
-			break;
-		default:
-			// all other message are debug!?!
-			if (debug) {
-				fprintf(stderr,"libargus_pep_api:DEBUG: ");
-				vfprintf(stderr,format,args);
-				fprintf(stderr,"\n");
-			}
-			break;
-		}
-	}
+    if (verbose || debug) {
+        switch (level) {
+        case 0:
+            fprintf(stderr,"libargus_pep_api:ERROR: ");
+            vfprintf(stderr,format,args);
+            fprintf(stderr,"\n");
+            break;
+        case 1:
+            fprintf(stderr,"libargus_pep_api:WARN: ");
+            vfprintf(stderr,format,args);
+            fprintf(stderr,"\n");
+            break;
+        case 2:
+            fprintf(stderr,"libargus_pep_api: ");
+            vfprintf(stderr,format,args);
+            fprintf(stderr,"\n");
+            break;
+        default:
+            // all other message are debug!?!
+            if (debug) {
+                fprintf(stderr,"libargus_pep_api:DEBUG: ");
+                vfprintf(stderr,format,args);
+                fprintf(stderr,"\n");
+            }
+            break;
+        }
+    }
 }
