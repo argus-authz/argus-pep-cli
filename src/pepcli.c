@@ -53,10 +53,10 @@ void log_handler_pep(int level, const char * format, va_list args);
 #define E_CERTCHAIN 3 // certchain file or content error
 #define E_XACMLREQ  4 // XACML request error
 #define E_PEPC      5 // PEP client error
-#define E_CAPATH	6 // CA path directory error
-#define E_CERT		7 // client cert file error
-#define E_KEY		8 // client key file error
-#define E_CACERT	9 // server cert file error
+#define E_CAPATH    6 // CA path directory error
+#define E_CERT      7 // client cert file error
+#define E_KEY       8 // client key file error
+#define E_CACERT    9 // server cert file error
 
 // program options
 static struct option long_options[] = {
@@ -126,13 +126,13 @@ static const char X_POSIX_ACCOUNT_MAP[]= "x-posix-account-map";
  * @retun 1 (true) if exists and readable, 0 (false) otherwise
  */
 static int file_is_readable(const char * filename) {
-	FILE * file= fopen(filename,"r");
-	if (file==NULL) {
-		show_error("%s: %s", filename, strerror(errno));
-		return 0;
-	}
-	fclose(file);
-	return 1;
+    FILE * file= fopen(filename,"r");
+    if (file==NULL) {
+        show_error("%s: %s", filename, strerror(errno));
+        return 0;
+    }
+    fclose(file);
+    return 1;
 }
 
 /**
@@ -142,22 +142,22 @@ static int file_is_readable(const char * filename) {
  * @retun 1 (true) if the private key is encrypted, 0 (false) otherwise
  */
 static int key_is_encrypted(const char * keyfile) {
-	char line[1024];
-	FILE * file= fopen(keyfile,"r");
-	if (file==NULL) {
-		show_error("%s: %s", keyfile, strerror(errno));
-		return 0;
-	}
-	int encrypted= 0;
-	while(fgets(line,1024,file) != NULL) {
-		if (strncmp(KEY_PROCTYPE_ENCRYPTED,line,strlen(KEY_PROCTYPE_ENCRYPTED)) == 0) {
-			show_debug("key %s is encrypted", keyfile);
-			encrypted= 1;
-			break;
-		}
-	}
-	fclose(file);
-	return encrypted;
+    char line[1024];
+    FILE * file= fopen(keyfile,"r");
+    if (file==NULL) {
+        show_error("%s: %s", keyfile, strerror(errno));
+        return 0;
+    }
+    int encrypted= 0;
+    while(fgets(line,1024,file) != NULL) {
+        if (strncmp(KEY_PROCTYPE_ENCRYPTED,line,strlen(KEY_PROCTYPE_ENCRYPTED)) == 0) {
+            show_debug("key %s is encrypted", keyfile);
+            encrypted= 1;
+            break;
+        }
+    }
+    fclose(file);
+    return encrypted;
 
 }
 
@@ -169,57 +169,57 @@ static int key_is_encrypted(const char * keyfile) {
  * @param filename The proxy or certificate file containing the cert chain
  */
 static char * read_certchain(const char * filename) {
-	char line[1024];
-	FILE * file= fopen(filename,"r");
-	if (file==NULL) {
-		show_error("failed to open certchain file: %s: %s", filename, strerror(errno));
-		return NULL;
-	}
-	BUFFER * cert_buffer= buffer_create(1024);
-	if (cert_buffer==NULL) {
-		show_error("can not create buffer");
-		return NULL;
-	}
-	int cert_part= 0;
-	while(fgets(line,1024,file) != NULL) {
-		if (strncmp(CERT_BEGIN,line,strlen(CERT_BEGIN)) == 0) {
-			cert_part= 1; // begin
-			// show_debug("certificate begin");
-		}
-		if (cert_part) {
-			buffer_write(line,sizeof(char),strlen(line),cert_buffer);
-		}
-		if (strncmp(CERT_END,line,strlen(CERT_END)) == 0) {
-			cert_part= 0; // end
-			// show_debug("certificate end");
-		}
-	}
-	fclose(file);
+    char line[1024];
+    FILE * file= fopen(filename,"r");
+    if (file==NULL) {
+        show_error("failed to open certchain file: %s: %s", filename, strerror(errno));
+        return NULL;
+    }
+    BUFFER * cert_buffer= buffer_create(1024);
+    if (cert_buffer==NULL) {
+        show_error("can not create buffer");
+        return NULL;
+    }
+    int cert_part= 0;
+    while(fgets(line,1024,file) != NULL) {
+        if (strncmp(CERT_BEGIN,line,strlen(CERT_BEGIN)) == 0) {
+            cert_part= 1; // begin
+            // show_debug("certificate begin");
+        }
+        if (cert_part) {
+            buffer_write(line,sizeof(char),strlen(line),cert_buffer);
+        }
+        if (strncmp(CERT_END,line,strlen(CERT_END)) == 0) {
+            cert_part= 0; // end
+            // show_debug("certificate end");
+        }
+    }
+    fclose(file);
 
-	size_t size= buffer_length(cert_buffer);
-	// show_debug("buffer length: %d",(int)size);
-	char * certchain= calloc(size+1,sizeof(char));
-	if (certchain==NULL) {
-		show_error("can not allocate buffer %d bytes: %s",size,strerror(errno));
-		buffer_delete(cert_buffer);
-		return NULL;
-	}
-	// copy
-	if (buffer_read(certchain,sizeof(char),size,cert_buffer)==BUFFER_ERROR) {
-		show_error("failed to copy certificate content to buffer");
-		buffer_delete(cert_buffer);
-		free(certchain);
-		return NULL;
-	}
+    size_t size= buffer_length(cert_buffer);
+    // show_debug("buffer length: %d",(int)size);
+    char * certchain= calloc(size+1,sizeof(char));
+    if (certchain==NULL) {
+        show_error("can not allocate buffer %d bytes: %s",size,strerror(errno));
+        buffer_delete(cert_buffer);
+        return NULL;
+    }
+    // copy
+    if (buffer_read(certchain,sizeof(char),size,cert_buffer)==BUFFER_ERROR) {
+        show_error("failed to copy certificate content to buffer");
+        buffer_delete(cert_buffer);
+        free(certchain);
+        return NULL;
+    }
 
-	buffer_delete(cert_buffer);
-	// check empty certchain
-	if (strlen(certchain)<=0) {
-		show_warn("certchain file: %s does not contain certificate",certchain_filename);
-		free(certchain);
-		return NULL;
-	}
-	return certchain;
+    buffer_delete(cert_buffer);
+    // check empty certchain
+    if (strlen(certchain)<=0) {
+        show_warn("certchain file: %s does not contain certificate",certchain_filename);
+        free(certchain);
+        return NULL;
+    }
+    return certchain;
 }
 
 /**
@@ -228,23 +228,23 @@ static char * read_certchain(const char * filename) {
  * @return pointer to the XACML Subject created or @c NULL on error.
  */
 static xacml_subject_t * create_xacml_subject_id(const char * x500dn) {
-	if (x500dn==NULL) return NULL;
-	// Subject id
-	xacml_subject_t * subject= xacml_subject_create();
-	if (subject==NULL) {
-		show_error("can not allocate XACML Subject");
-		return NULL;
-	}
-	xacml_attribute_t * subject_attr_id= xacml_attribute_create(XACML_SUBJECT_ID);
-	if (subject_attr_id==NULL) {
-		show_error("can not allocate XACML Subject/Attribute: %s",XACML_SUBJECT_ID);
-		xacml_subject_delete(subject);
-		return NULL;
-	}
-	xacml_attribute_setdatatype(subject_attr_id,XACML_DATATYPE_X500NAME);
-	xacml_attribute_addvalue(subject_attr_id,x500dn);
-	xacml_subject_addattribute(subject,subject_attr_id);
-	return subject;
+    if (x500dn==NULL) return NULL;
+    // Subject id
+    xacml_subject_t * subject= xacml_subject_create();
+    if (subject==NULL) {
+        show_error("can not allocate XACML Subject");
+        return NULL;
+    }
+    xacml_attribute_t * subject_attr_id= xacml_attribute_create(XACML_SUBJECT_ID);
+    if (subject_attr_id==NULL) {
+        show_error("can not allocate XACML Subject/Attribute: %s",XACML_SUBJECT_ID);
+        xacml_subject_delete(subject);
+        return NULL;
+    }
+    xacml_attribute_setdatatype(subject_attr_id,XACML_DATATYPE_X500NAME);
+    xacml_attribute_addvalue(subject_attr_id,x500dn);
+    xacml_subject_addattribute(subject,subject_attr_id);
+    return subject;
 }
 
 /**
@@ -253,23 +253,23 @@ static xacml_subject_t * create_xacml_subject_id(const char * x500dn) {
  * @return pointer to the XACML Subject created or @c NULL on error.
  */
 static xacml_subject_t * create_xacml_subject_certchain(const char * certchain) {
-	if (certchain==NULL) return NULL;
-	// Subject cert-chain
-	xacml_subject_t * subject= xacml_subject_create();
-	if (subject==NULL) {
-		show_error("can not allocate XACML Subject");
-		return NULL;
-	}
-	xacml_attribute_t * subject_attr_id= xacml_attribute_create(XACML_AUTHZINTEROP_SUBJECT_CERTCHAIN);
-	if (subject_attr_id==NULL) {
-		show_error("can not allocate XACML Subject/Attribute: %s",XACML_AUTHZINTEROP_SUBJECT_CERTCHAIN);
-		xacml_subject_delete(subject);
-		return NULL;
-	}
-	xacml_attribute_setdatatype(subject_attr_id,XACML_DATATYPE_BASE64BINARY);
-	xacml_attribute_addvalue(subject_attr_id,certchain);
-	xacml_subject_addattribute(subject,subject_attr_id);
-	return subject;
+    if (certchain==NULL) return NULL;
+    // Subject cert-chain
+    xacml_subject_t * subject= xacml_subject_create();
+    if (subject==NULL) {
+        show_error("can not allocate XACML Subject");
+        return NULL;
+    }
+    xacml_attribute_t * subject_attr_id= xacml_attribute_create(XACML_AUTHZINTEROP_SUBJECT_CERTCHAIN);
+    if (subject_attr_id==NULL) {
+        show_error("can not allocate XACML Subject/Attribute: %s",XACML_AUTHZINTEROP_SUBJECT_CERTCHAIN);
+        xacml_subject_delete(subject);
+        return NULL;
+    }
+    xacml_attribute_setdatatype(subject_attr_id,XACML_DATATYPE_BASE64BINARY);
+    xacml_attribute_addvalue(subject_attr_id,certchain);
+    xacml_subject_addattribute(subject,subject_attr_id);
+    return subject;
 }
 
 /**
@@ -278,23 +278,23 @@ static xacml_subject_t * create_xacml_subject_certchain(const char * certchain) 
  * @return pointer to the XACML Subject created or @c NULL on error.
  */
 static xacml_subject_t * create_xacml_subject_keyinfo(const char * certchain) {
-	if (certchain==NULL) return NULL;
-	// Subject cert-chain
-	xacml_subject_t * subject= xacml_subject_create();
-	if (subject==NULL) {
-		show_error("can not allocate XACML Subject");
-		return NULL;
-	}
-	xacml_attribute_t * subject_attr_id= xacml_attribute_create(XACML_SUBJECT_KEY_INFO);
-	if (subject_attr_id==NULL) {
-		show_error("can not allocate XACML Subject/Attribute: %s",XACML_SUBJECT_KEY_INFO);
-		xacml_subject_delete(subject);
-		return NULL;
-	}
-	xacml_attribute_setdatatype(subject_attr_id,XACML_DATATYPE_STRING);
-	xacml_attribute_addvalue(subject_attr_id,certchain);
-	xacml_subject_addattribute(subject,subject_attr_id);
-	return subject;
+    if (certchain==NULL) return NULL;
+    // Subject cert-chain
+    xacml_subject_t * subject= xacml_subject_create();
+    if (subject==NULL) {
+        show_error("can not allocate XACML Subject");
+        return NULL;
+    }
+    xacml_attribute_t * subject_attr_id= xacml_attribute_create(XACML_SUBJECT_KEY_INFO);
+    if (subject_attr_id==NULL) {
+        show_error("can not allocate XACML Subject/Attribute: %s",XACML_SUBJECT_KEY_INFO);
+        xacml_subject_delete(subject);
+        return NULL;
+    }
+    xacml_attribute_setdatatype(subject_attr_id,XACML_DATATYPE_STRING);
+    xacml_attribute_addvalue(subject_attr_id,certchain);
+    xacml_subject_addattribute(subject,subject_attr_id);
+    return subject;
 }
 
 /**
@@ -303,48 +303,48 @@ static xacml_subject_t * create_xacml_subject_keyinfo(const char * certchain) {
  * @return pointer to the XACML Subject created or @c NULL on empty FQANs list or on error.
  */
 static xacml_subject_t * create_xacml_subject_fqans(linkedlist_t * fqans_list) {
-	if (fqans_list==NULL) return NULL;
-	// empty list
-	size_t fqans_l= llist_length(fqans_list);
-	if (fqans_l<1) return NULL;
+    if (fqans_list==NULL) return NULL;
+    // empty list
+    size_t fqans_l= llist_length(fqans_list);
+    if (fqans_l<1) return NULL;
 
-	xacml_subject_t * subject= xacml_subject_create();
-	if (subject==NULL) {
-		show_error("can not allocate XACML Subject");
-		return NULL;
-	}
-	int i= 0;
-	// all FQANs are fqan Attributes
-	xacml_attribute_t * fqan_attr= xacml_attribute_create(XACML_GRIDWN_ATTRIBUTE_FQAN);
-	if (fqan_attr==NULL) {
-		show_error("can not allocate XACML Subject/Attribute: %s",XACML_GRIDWN_ATTRIBUTE_FQAN);
-		xacml_subject_delete(subject);
-		return NULL;
-	}
-	xacml_attribute_setdatatype(fqan_attr,XACML_GRIDWN_DATATYPE_FQAN);
-	for (i= 0; i<fqans_l; i++) {
-		char * fqan= (char *)llist_get(fqans_list,i);
-		if (fqan==NULL) {
-			show_error("NULL pointer in FQANs list at: %d",i);
-			xacml_subject_delete(subject);
-			return NULL;
-		}
-		xacml_attribute_addvalue(fqan_attr,fqan);
-		if (i==0) {
-			// fist FQAN is the fqan/primary Attribute
-			xacml_attribute_t * fqan_primary_attr= xacml_attribute_create(XACML_GRIDWN_ATTRIBUTE_FQAN_PRIMARY);
-			if (fqan_primary_attr==NULL) {
-				show_error("can not allocate XACML Subject/Attribute: %s",XACML_GRIDWN_ATTRIBUTE_FQAN_PRIMARY);
-				xacml_subject_delete(subject);
-				return NULL;
-			}
-			xacml_attribute_setdatatype(fqan_primary_attr,XACML_GRIDWN_DATATYPE_FQAN);
-			xacml_attribute_addvalue(fqan_primary_attr,fqan);
-			xacml_subject_addattribute(subject,fqan_primary_attr);
-		}
-	}
-	xacml_subject_addattribute(subject,fqan_attr);
-	return subject;
+    xacml_subject_t * subject= xacml_subject_create();
+    if (subject==NULL) {
+        show_error("can not allocate XACML Subject");
+        return NULL;
+    }
+    int i= 0;
+    // all FQANs are fqan Attributes
+    xacml_attribute_t * fqan_attr= xacml_attribute_create(XACML_GRIDWN_ATTRIBUTE_FQAN);
+    if (fqan_attr==NULL) {
+        show_error("can not allocate XACML Subject/Attribute: %s",XACML_GRIDWN_ATTRIBUTE_FQAN);
+        xacml_subject_delete(subject);
+        return NULL;
+    }
+    xacml_attribute_setdatatype(fqan_attr,XACML_GRIDWN_DATATYPE_FQAN);
+    for (i= 0; i<fqans_l; i++) {
+        char * fqan= (char *)llist_get(fqans_list,i);
+        if (fqan==NULL) {
+            show_error("NULL pointer in FQANs list at: %d",i);
+            xacml_subject_delete(subject);
+            return NULL;
+        }
+        xacml_attribute_addvalue(fqan_attr,fqan);
+        if (i==0) {
+            // fist FQAN is the fqan/primary Attribute
+            xacml_attribute_t * fqan_primary_attr= xacml_attribute_create(XACML_GRIDWN_ATTRIBUTE_FQAN_PRIMARY);
+            if (fqan_primary_attr==NULL) {
+                show_error("can not allocate XACML Subject/Attribute: %s",XACML_GRIDWN_ATTRIBUTE_FQAN_PRIMARY);
+                xacml_subject_delete(subject);
+                return NULL;
+            }
+            xacml_attribute_setdatatype(fqan_primary_attr,XACML_GRIDWN_DATATYPE_FQAN);
+            xacml_attribute_addvalue(fqan_primary_attr,fqan);
+            xacml_subject_addattribute(subject,fqan_primary_attr);
+        }
+    }
+    xacml_subject_addattribute(subject,fqan_attr);
+    return subject;
 }
 
 /**
@@ -353,48 +353,48 @@ static xacml_subject_t * create_xacml_subject_fqans(linkedlist_t * fqans_list) {
  * @return pointer to the XACML Subject created or @c NULL on empty FQANs list or on error.
  */
 static xacml_subject_t * create_xacml_subject_voms_fqans(linkedlist_t * fqans_list) {
-	if (fqans_list==NULL) return NULL;
-	// empty list
-	size_t fqans_l= llist_length(fqans_list);
-	if (fqans_l<1) return NULL;
+    if (fqans_list==NULL) return NULL;
+    // empty list
+    size_t fqans_l= llist_length(fqans_list);
+    if (fqans_l<1) return NULL;
 
-	xacml_subject_t * subject= xacml_subject_create();
-	if (subject==NULL) {
-		show_error("can not allocate XACML Subject");
-		return NULL;
-	}
-	int i= 0;
-	// all FQANs are voms-fqan Attributes
-	xacml_attribute_t * voms_fqan= xacml_attribute_create(XACML_AUTHZINTEROP_SUBJECT_VOMS_FQAN);
-	if (voms_fqan==NULL) {
-		show_error("can not allocate XACML Subject/Attribute: %s",XACML_AUTHZINTEROP_SUBJECT_VOMS_FQAN);
-		xacml_subject_delete(subject);
-		return NULL;
-	}
-	xacml_attribute_setdatatype(voms_fqan,XACML_DATATYPE_STRING);
-	for (i= 0; i<fqans_l; i++) {
-		char * fqan= (char *)llist_get(fqans_list,i);
-		if (fqan==NULL) {
-			show_error("NULL pointer in FQANs list at: %d",i);
-			xacml_subject_delete(subject);
-			return NULL;
-		}
-		xacml_attribute_addvalue(voms_fqan,fqan);
-		if (i==0) {
-			// fist FQAN is the voms-primary-fqan Attribute
-			xacml_attribute_t * voms_primary_fqan= xacml_attribute_create(XACML_AUTHZINTEROP_SUBJECT_VOMS_PRIMARY_FQAN);
-			if (voms_primary_fqan==NULL) {
-				show_error("can not allocate XACML Subject/Attribute: %s",XACML_AUTHZINTEROP_SUBJECT_VOMS_PRIMARY_FQAN);
-				xacml_subject_delete(subject);
-				return NULL;
-			}
-			xacml_attribute_setdatatype(voms_primary_fqan,XACML_DATATYPE_STRING);
-			xacml_attribute_addvalue(voms_primary_fqan,fqan);
-			xacml_subject_addattribute(subject,voms_primary_fqan);
-		}
-	}
-	xacml_subject_addattribute(subject,voms_fqan);
-	return subject;
+    xacml_subject_t * subject= xacml_subject_create();
+    if (subject==NULL) {
+        show_error("can not allocate XACML Subject");
+        return NULL;
+    }
+    int i= 0;
+    // all FQANs are voms-fqan Attributes
+    xacml_attribute_t * voms_fqan= xacml_attribute_create(XACML_AUTHZINTEROP_SUBJECT_VOMS_FQAN);
+    if (voms_fqan==NULL) {
+        show_error("can not allocate XACML Subject/Attribute: %s",XACML_AUTHZINTEROP_SUBJECT_VOMS_FQAN);
+        xacml_subject_delete(subject);
+        return NULL;
+    }
+    xacml_attribute_setdatatype(voms_fqan,XACML_DATATYPE_STRING);
+    for (i= 0; i<fqans_l; i++) {
+        char * fqan= (char *)llist_get(fqans_list,i);
+        if (fqan==NULL) {
+            show_error("NULL pointer in FQANs list at: %d",i);
+            xacml_subject_delete(subject);
+            return NULL;
+        }
+        xacml_attribute_addvalue(voms_fqan,fqan);
+        if (i==0) {
+            // fist FQAN is the voms-primary-fqan Attribute
+            xacml_attribute_t * voms_primary_fqan= xacml_attribute_create(XACML_AUTHZINTEROP_SUBJECT_VOMS_PRIMARY_FQAN);
+            if (voms_primary_fqan==NULL) {
+                show_error("can not allocate XACML Subject/Attribute: %s",XACML_AUTHZINTEROP_SUBJECT_VOMS_PRIMARY_FQAN);
+                xacml_subject_delete(subject);
+                return NULL;
+            }
+            xacml_attribute_setdatatype(voms_primary_fqan,XACML_DATATYPE_STRING);
+            xacml_attribute_addvalue(voms_primary_fqan,fqan);
+            xacml_subject_addattribute(subject,voms_primary_fqan);
+        }
+    }
+    xacml_subject_addattribute(subject,voms_fqan);
+    return subject;
 }
 
 /**
@@ -406,23 +406,23 @@ static xacml_subject_t * create_xacml_subject_voms_fqans(linkedlist_t * fqans_li
  * @return 0 or a negative int on error.
  */
 static int merge_xacml_subject_attrs_into(xacml_subject_t * from_subject, xacml_subject_t * to_subject) {
-	if (to_subject==NULL) {
-		show_error("destination XACML Subject is NULL");
-		return -1;
-	}
-	if (from_subject==NULL) {
-		return 0;
-	}
-	size_t l= xacml_subject_attributes_length(from_subject);
-	int i= 0;
-	for(i= 0; i<l; i++) {
-		xacml_attribute_t * attr= xacml_subject_getattribute(from_subject,i);
-		if (xacml_subject_addattribute(to_subject,attr)!=PEP_XACML_OK) {
-			show_error("failed to merge attribute %d into Subject",i);
-			return -2;
-		}
-	}
-	return 0;
+    if (to_subject==NULL) {
+        show_error("destination XACML Subject is NULL");
+        return -1;
+    }
+    if (from_subject==NULL) {
+        return 0;
+    }
+    size_t l= xacml_subject_attributes_length(from_subject);
+    int i= 0;
+    for(i= 0; i<l; i++) {
+        xacml_attribute_t * attr= xacml_subject_getattribute(from_subject,i);
+        if (xacml_subject_addattribute(to_subject,attr)!=PEP_XACML_OK) {
+            show_error("failed to merge attribute %d into Subject",i);
+            return -2;
+        }
+    }
+    return 0;
 }
 
 /**
@@ -431,21 +431,21 @@ static int merge_xacml_subject_attrs_into(xacml_subject_t * from_subject, xacml_
  * @return pointer to the XACML Resource created or @c NULL on error.
  */
 static xacml_resource_t * create_xacml_resource_id(const char * resourceid) {
-	if (resourceid==NULL) return NULL;
-	xacml_resource_t * resource= xacml_resource_create();
-	if (resource==NULL) {
-		show_error("can not allocate XACML Resource");
-		return NULL;
-	}
-	xacml_attribute_t * resource_attr_id= xacml_attribute_create(XACML_RESOURCE_ID);
-	if (resource_attr_id==NULL) {
-		show_error("can not allocate XAMCL Resource/Attribute: %s",XACML_RESOURCE_ID);
-		xacml_resource_delete(resource);
-		return NULL;
-	}
-	xacml_attribute_addvalue(resource_attr_id,resourceid);
-	xacml_resource_addattribute(resource,resource_attr_id);
-	return resource;
+    if (resourceid==NULL) return NULL;
+    xacml_resource_t * resource= xacml_resource_create();
+    if (resource==NULL) {
+        show_error("can not allocate XACML Resource");
+        return NULL;
+    }
+    xacml_attribute_t * resource_attr_id= xacml_attribute_create(XACML_RESOURCE_ID);
+    if (resource_attr_id==NULL) {
+        show_error("can not allocate XAMCL Resource/Attribute: %s",XACML_RESOURCE_ID);
+        xacml_resource_delete(resource);
+        return NULL;
+    }
+    xacml_attribute_addvalue(resource_attr_id,resourceid);
+    xacml_resource_addattribute(resource,resource_attr_id);
+    return resource;
 }
 
 /**
@@ -454,21 +454,21 @@ static xacml_resource_t * create_xacml_resource_id(const char * resourceid) {
  * @return pointer to the XACML Action created or @c NULL on error.
  */
 static xacml_action_t * create_xacml_action_id(const char * actionid) {
-	if (actionid==NULL) return NULL;
-	xacml_action_t * action= xacml_action_create();
-	if (action==NULL) {
-		show_error("can not allocate XACML Action");
-		return NULL;
-	}
-	xacml_attribute_t * action_attr_id= xacml_attribute_create(XACML_ACTION_ID);
-	if (action_attr_id==NULL) {
-		show_error("can not allocate XACML Action/Attribute: %s",XACML_ACTION_ID);
-		xacml_action_delete(action);
-		return NULL;
-	}
-	xacml_attribute_addvalue(action_attr_id,actionid);
-	xacml_action_addattribute(action,action_attr_id);
-	return action;
+    if (actionid==NULL) return NULL;
+    xacml_action_t * action= xacml_action_create();
+    if (action==NULL) {
+        show_error("can not allocate XACML Action");
+        return NULL;
+    }
+    xacml_attribute_t * action_attr_id= xacml_attribute_create(XACML_ACTION_ID);
+    if (action_attr_id==NULL) {
+        show_error("can not allocate XACML Action/Attribute: %s",XACML_ACTION_ID);
+        xacml_action_delete(action);
+        return NULL;
+    }
+    xacml_attribute_addvalue(action_attr_id,actionid);
+    xacml_action_addattribute(action,action_attr_id);
+    return action;
 }
 
 /**
@@ -477,53 +477,53 @@ static xacml_action_t * create_xacml_action_id(const char * actionid) {
  * @return pointer to the XACML Environment created or @c NULL on error.
  */
 static xacml_environment_t * create_xacml_environment_profile_id(const char * profile) {
-	if (profile==NULL) return NULL;
-	xacml_environment_t * env= xacml_environment_create();
-	if (env==NULL) {
-		show_error("can not allocate XACML Environment");
-		return NULL;
-	}
-	xacml_attribute_t * env_attr= xacml_attribute_create(XACML_GRIDWN_ATTRIBUTE_PROFILE_ID);
-	if (env_attr==NULL) {
-		show_error("can not allocate XACML Environment/Attribute: %s",XACML_GRIDWN_ATTRIBUTE_PROFILE_ID);
-		xacml_environment_delete(env);
-		return NULL;
-	}
-	xacml_attribute_addvalue(env_attr,profile);
+    if (profile==NULL) return NULL;
+    xacml_environment_t * env= xacml_environment_create();
+    if (env==NULL) {
+        show_error("can not allocate XACML Environment");
+        return NULL;
+    }
+    xacml_attribute_t * env_attr= xacml_attribute_create(XACML_GRIDWN_ATTRIBUTE_PROFILE_ID);
+    if (env_attr==NULL) {
+        show_error("can not allocate XACML Environment/Attribute: %s",XACML_GRIDWN_ATTRIBUTE_PROFILE_ID);
+        xacml_environment_delete(env);
+        return NULL;
+    }
+    xacml_attribute_addvalue(env_attr,profile);
     xacml_attribute_setdatatype(env_attr,XACML_DATATYPE_ANYURI);
-	xacml_environment_addattribute(env,env_attr);
-	return env;
+    xacml_environment_addattribute(env,env_attr);
+    return env;
 }
 
 /**
  * Creates a XACML Request with a Subject, a Resource and a Action.
  */
 static xacml_request_t * create_xacml_request(xacml_subject_t * subject, xacml_resource_t * resource, xacml_action_t * action) {
-	// Request (Subject, Resource, Action)
-	xacml_request_t * request= xacml_request_create();
-	if (request==NULL) {
-		show_error("can not allocate XACML Request");
-		xacml_subject_delete(subject);
-		xacml_resource_delete(resource);
-		xacml_action_delete(action);
-		return NULL;
-	}
-	if (subject!=NULL) {
-		xacml_request_addsubject(request,subject);
-	}
-	if (resource!=NULL) {
-		xacml_request_addresource(request,resource);
-	}
-	if (action!=NULL) {
-		xacml_request_setaction(request,action);
-	}
-	// add Grid WN AuthZ Profile in Env
-	xacml_environment_t * environment= create_xacml_environment_profile_id(XACML_GRIDWN_PROFILE_VERSION);
-	if (environment) {
-		xacml_request_setenvironment(request,environment);
-	}
+    // Request (Subject, Resource, Action)
+    xacml_request_t * request= xacml_request_create();
+    if (request==NULL) {
+        show_error("can not allocate XACML Request");
+        xacml_subject_delete(subject);
+        xacml_resource_delete(resource);
+        xacml_action_delete(action);
+        return NULL;
+    }
+    if (subject!=NULL) {
+        xacml_request_addsubject(request,subject);
+    }
+    if (resource!=NULL) {
+        xacml_request_addresource(request,resource);
+    }
+    if (action!=NULL) {
+        xacml_request_setaction(request,action);
+    }
+    // add Grid WN AuthZ Profile in Env
+    xacml_environment_t * environment= create_xacml_environment_profile_id(XACML_GRIDWN_PROFILE_VERSION);
+    if (environment) {
+        xacml_request_setenvironment(request,environment);
+    }
 
-	return request;
+    return request;
 }
 
 /**
@@ -553,251 +553,251 @@ static const char * decision_str(int decision) {
  * Shows a XACML request. NULL values are not displayed.
  */
 static int show_xacml_request(xacml_request_t * request) {
-	if (request == NULL) {
-		show_error("show_request: request is NULL");
-		return 1;
-	}
-	size_t subjects_l= xacml_request_subjects_length(request);
-	show_info("request: %d subjects", (int)subjects_l);
-	int i= 0;
-	for (i= 0; i<subjects_l; i++) {
-		xacml_subject_t * subject= xacml_request_getsubject(request,i);
-		const char * category= xacml_subject_getcategory(subject);
-		if (category)
-			show_info("request.subject[%d].category= %s", i, category);
-		size_t attrs_l= xacml_subject_attributes_length(subject);
-		show_info("request.subject[%d]: %d attributes", i, (int)attrs_l);
-		int j= 0;
-		for(j= 0; j<attrs_l; j++) {
-			xacml_attribute_t * attr= xacml_subject_getattribute(subject,j);
-			const char * attr_id= xacml_attribute_getid(attr);
-			if (attr_id)
-				show_info("request.subject[%d].attribute[%d].id= %s", i,j,attr_id);
-			const char * attr_datatype= xacml_attribute_getdatatype(attr);
-			if (attr_datatype)
-				show_info("request.subject[%d].attribute[%d].datatype= %s", i,j,attr_datatype);
-			const char * attr_issuer= xacml_attribute_getissuer(attr);
-			if (attr_issuer)
-				show_info("request.subject[%d].attribute[%d].issuer= %s", i,j,attr_issuer);
-			size_t values_l= xacml_attribute_values_length(attr);
-			//show_info("request.subject[%d].attribute[%d]: %d values", i,j,(int)values_l);
-			int k= 0;
-			for (k= 0; k<values_l; k++) {
-				const char * attr_value= xacml_attribute_getvalue(attr,k);
-				show_info("request.subject[%d].attribute[%d].value[%d]= %s", i,j,k,attr_value);
-			}
-		}
-	}
-	size_t resources_l= xacml_request_resources_length(request);
-	show_info("request: %d resources", (int)resources_l);
-	for (i= 0; i<resources_l; i++) {
-		xacml_resource_t * resource= xacml_request_getresource(request,i);
-		const char * res_content= xacml_resource_getcontent(resource);
-		if (res_content)
-			show_info("request.resource[%d].content= %s", i, res_content);
-		size_t attrs_l= xacml_resource_attributes_length(resource);
-		show_info("request.resource[%d]: %d attributes", i, (int)attrs_l);
-		int j= 0;
-		for(j= 0; j<attrs_l; j++) {
-			xacml_attribute_t * attr= xacml_resource_getattribute(resource,j);
-			const char * attr_id= xacml_attribute_getid(attr);
-			if (attr_id)
-				show_info("request.resource[%d].attribute[%d].id= %s", i,j,attr_id);
-			const char * attr_datatype= xacml_attribute_getdatatype(attr);
-			if (attr_datatype)
-				show_info("request.resource[%d].attribute[%d].datatype= %s", i,j,attr_datatype);
-			const char * attr_issuer= xacml_attribute_getissuer(attr);
-			if (attr_issuer)
-				show_info("request.resource[%d].attribute[%d].issuer= %s", i,j,attr_issuer);
-			size_t values_l= xacml_attribute_values_length(attr);
-			//show_info("request.resource[%d].attribute[%d]: %d values", i,j,(int)values_l);
-			int k= 0;
-			for (k= 0; k<values_l; k++) {
-				const char * attr_value= xacml_attribute_getvalue(attr,k);
-				if (attr_value)
-					show_info("request.resource[%d].attribute[%d].value[%d]= %s", i,j,k,attr_value);
-			}
-		}
-	}
-	int j= 0;
-	xacml_action_t * action= xacml_request_getaction(request);
-	if (action) {
-		size_t act_attrs_l= xacml_action_attributes_length(action);
-		show_info("request.action: %d attributes",(int)act_attrs_l);
-		for (j= 0; j<act_attrs_l; j++) {
-			xacml_attribute_t * attr= xacml_action_getattribute(action,j);
-			const char * attr_id= xacml_attribute_getid(attr);
-			if (attr_id)
-				show_info("request.action.attribute[%d].id= %s", j,attr_id);
-			const char * attr_datatype= xacml_attribute_getdatatype(attr);
-			if (attr_datatype)
-				show_info("request.action.attribute[%d].datatype= %s", j,attr_datatype);
-			const char * attr_issuer= xacml_attribute_getissuer(attr);
-			if (attr_issuer)
-				show_info("request.action.attribute[%d].issuer= %s", j,attr_issuer);
-			size_t values_l= xacml_attribute_values_length(attr);
-			//show_info("request.action.attribute[%d]: %d values", j,(int)values_l);
-			int k= 0;
-			for (k= 0; k<values_l; k++) {
-				const char * attr_value= xacml_attribute_getvalue(attr,k);
-				if (attr_value)
-					show_info("request.action.attribute[%d].value[%d]= %s",j,k,attr_value);
-			}
-		}
-	}
-	xacml_environment_t * env= xacml_request_getenvironment(request);
-	if (env) {
-		size_t env_attrs_l= xacml_environment_attributes_length(env);
-		show_info("request.environment: %d attributes",(int)env_attrs_l);
-		for (j= 0; j<env_attrs_l; j++) {
-			xacml_attribute_t * attr= xacml_environment_getattribute(env,j);
-			const char * attr_id= xacml_attribute_getid(attr);
-			if (attr_id)
-				show_info("request.environment.attribute[%d].id= %s", j,attr_id);
-			const char * attr_datatype= xacml_attribute_getdatatype(attr);
-			if (attr_datatype)
-				show_info("request.environment.attribute[%d].datatype= %s", j,attr_datatype);
-			const char * attr_issuer= xacml_attribute_getissuer(attr);
-			if (attr_issuer)
-				show_info("request.environment.attribute[%d].issuer= %s", j,attr_issuer);
-			size_t values_l= xacml_attribute_values_length(attr);
-			//show_info("request.environment.attribute[%d]: %d values", j,(int)values_l);
-			int k= 0;
-			for (k= 0; k<values_l; k++) {
-				const char * attr_value= xacml_attribute_getvalue(attr,k);
-				if (attr_value)
-					show_info("request.environment.attribute[%d].value[%d]= %s",j,k,attr_value);
-			}
-		}
-	}
-	return 0;
+    if (request == NULL) {
+        show_error("show_request: request is NULL");
+        return 1;
+    }
+    size_t subjects_l= xacml_request_subjects_length(request);
+    show_info("request: %d subjects", (int)subjects_l);
+    int i= 0;
+    for (i= 0; i<subjects_l; i++) {
+        xacml_subject_t * subject= xacml_request_getsubject(request,i);
+        const char * category= xacml_subject_getcategory(subject);
+        if (category)
+            show_info("request.subject[%d].category= %s", i, category);
+        size_t attrs_l= xacml_subject_attributes_length(subject);
+        show_info("request.subject[%d]: %d attributes", i, (int)attrs_l);
+        int j= 0;
+        for(j= 0; j<attrs_l; j++) {
+            xacml_attribute_t * attr= xacml_subject_getattribute(subject,j);
+            const char * attr_id= xacml_attribute_getid(attr);
+            if (attr_id)
+                show_info("request.subject[%d].attribute[%d].id= %s", i,j,attr_id);
+            const char * attr_datatype= xacml_attribute_getdatatype(attr);
+            if (attr_datatype)
+                show_info("request.subject[%d].attribute[%d].datatype= %s", i,j,attr_datatype);
+            const char * attr_issuer= xacml_attribute_getissuer(attr);
+            if (attr_issuer)
+                show_info("request.subject[%d].attribute[%d].issuer= %s", i,j,attr_issuer);
+            size_t values_l= xacml_attribute_values_length(attr);
+            //show_info("request.subject[%d].attribute[%d]: %d values", i,j,(int)values_l);
+            int k= 0;
+            for (k= 0; k<values_l; k++) {
+                const char * attr_value= xacml_attribute_getvalue(attr,k);
+                show_info("request.subject[%d].attribute[%d].value[%d]= %s", i,j,k,attr_value);
+            }
+        }
+    }
+    size_t resources_l= xacml_request_resources_length(request);
+    show_info("request: %d resources", (int)resources_l);
+    for (i= 0; i<resources_l; i++) {
+        xacml_resource_t * resource= xacml_request_getresource(request,i);
+        const char * res_content= xacml_resource_getcontent(resource);
+        if (res_content)
+            show_info("request.resource[%d].content= %s", i, res_content);
+        size_t attrs_l= xacml_resource_attributes_length(resource);
+        show_info("request.resource[%d]: %d attributes", i, (int)attrs_l);
+        int j= 0;
+        for(j= 0; j<attrs_l; j++) {
+            xacml_attribute_t * attr= xacml_resource_getattribute(resource,j);
+            const char * attr_id= xacml_attribute_getid(attr);
+            if (attr_id)
+                show_info("request.resource[%d].attribute[%d].id= %s", i,j,attr_id);
+            const char * attr_datatype= xacml_attribute_getdatatype(attr);
+            if (attr_datatype)
+                show_info("request.resource[%d].attribute[%d].datatype= %s", i,j,attr_datatype);
+            const char * attr_issuer= xacml_attribute_getissuer(attr);
+            if (attr_issuer)
+                show_info("request.resource[%d].attribute[%d].issuer= %s", i,j,attr_issuer);
+            size_t values_l= xacml_attribute_values_length(attr);
+            //show_info("request.resource[%d].attribute[%d]: %d values", i,j,(int)values_l);
+            int k= 0;
+            for (k= 0; k<values_l; k++) {
+                const char * attr_value= xacml_attribute_getvalue(attr,k);
+                if (attr_value)
+                    show_info("request.resource[%d].attribute[%d].value[%d]= %s", i,j,k,attr_value);
+            }
+        }
+    }
+    int j= 0;
+    xacml_action_t * action= xacml_request_getaction(request);
+    if (action) {
+        size_t act_attrs_l= xacml_action_attributes_length(action);
+        show_info("request.action: %d attributes",(int)act_attrs_l);
+        for (j= 0; j<act_attrs_l; j++) {
+            xacml_attribute_t * attr= xacml_action_getattribute(action,j);
+            const char * attr_id= xacml_attribute_getid(attr);
+            if (attr_id)
+                show_info("request.action.attribute[%d].id= %s", j,attr_id);
+            const char * attr_datatype= xacml_attribute_getdatatype(attr);
+            if (attr_datatype)
+                show_info("request.action.attribute[%d].datatype= %s", j,attr_datatype);
+            const char * attr_issuer= xacml_attribute_getissuer(attr);
+            if (attr_issuer)
+                show_info("request.action.attribute[%d].issuer= %s", j,attr_issuer);
+            size_t values_l= xacml_attribute_values_length(attr);
+            //show_info("request.action.attribute[%d]: %d values", j,(int)values_l);
+            int k= 0;
+            for (k= 0; k<values_l; k++) {
+                const char * attr_value= xacml_attribute_getvalue(attr,k);
+                if (attr_value)
+                    show_info("request.action.attribute[%d].value[%d]= %s",j,k,attr_value);
+            }
+        }
+    }
+    xacml_environment_t * env= xacml_request_getenvironment(request);
+    if (env) {
+        size_t env_attrs_l= xacml_environment_attributes_length(env);
+        show_info("request.environment: %d attributes",(int)env_attrs_l);
+        for (j= 0; j<env_attrs_l; j++) {
+            xacml_attribute_t * attr= xacml_environment_getattribute(env,j);
+            const char * attr_id= xacml_attribute_getid(attr);
+            if (attr_id)
+                show_info("request.environment.attribute[%d].id= %s", j,attr_id);
+            const char * attr_datatype= xacml_attribute_getdatatype(attr);
+            if (attr_datatype)
+                show_info("request.environment.attribute[%d].datatype= %s", j,attr_datatype);
+            const char * attr_issuer= xacml_attribute_getissuer(attr);
+            if (attr_issuer)
+                show_info("request.environment.attribute[%d].issuer= %s", j,attr_issuer);
+            size_t values_l= xacml_attribute_values_length(attr);
+            //show_info("request.environment.attribute[%d]: %d values", j,(int)values_l);
+            int k= 0;
+            for (k= 0; k<values_l; k++) {
+                const char * attr_value= xacml_attribute_getvalue(attr,k);
+                if (attr_value)
+                    show_info("request.environment.attribute[%d].value[%d]= %s",j,k,attr_value);
+            }
+        }
+    }
+    return 0;
 }
 
 /**
  * Shows a XACML response.
  */
 static int show_xacml_response(xacml_response_t * response) {
-	if (response == NULL) {
-		show_error("show_response: response is NULL");
-		return 1;
-	}
-	size_t results_l= xacml_response_results_length(response);
-	show_info("response: %d results", (int)results_l);
-	int i= 0;
-	for(i= 0; i<results_l; i++) {
-		xacml_result_t * result= xacml_response_getresult(response,i);
-		show_info("response.result[%d].decision= %s", i, decision_str(xacml_result_getdecision(result)));
+    if (response == NULL) {
+        show_error("show_response: response is NULL");
+        return 1;
+    }
+    size_t results_l= xacml_response_results_length(response);
+    show_info("response: %d results", (int)results_l);
+    int i= 0;
+    for(i= 0; i<results_l; i++) {
+        xacml_result_t * result= xacml_response_getresult(response,i);
+        show_info("response.result[%d].decision= %s", i, decision_str(xacml_result_getdecision(result)));
 
-		show_info("response.result[%d].resourceid= %s", i, xacml_result_getresourceid(result));
-		xacml_status_t * status= xacml_result_getstatus(result);
-		show_info("response.result[%d].status.message= %s", i, xacml_status_getmessage(status));
-		xacml_statuscode_t * statuscode= xacml_status_getcode(status);
-		show_info("response.result[%d].status.code.value= %s", i, xacml_statuscode_getvalue(statuscode));
-		xacml_statuscode_t * subcode= xacml_statuscode_getsubcode(statuscode);
-		if (subcode != NULL) {
-			show_info("response.result[%d].status.code.subcode.value= %s", i, xacml_statuscode_getvalue(subcode));
-		}
-		size_t obligations_l= xacml_result_obligations_length(result);
-		show_info("response.result[%d]: %d obligations", i, (int)obligations_l);
-		int j=0;
-		for(j= 0; j<obligations_l; j++) {
-			xacml_obligation_t * obligation= xacml_result_getobligation(result,j);
-			show_info("response.result[%d].obligation[%d].id= %s",i,j, xacml_obligation_getid(obligation));
-			show_info("response.result[%d].obligation[%d].fulfillOn= %s",i,j, decision_str(xacml_obligation_getfulfillon(obligation)));
-			size_t attrs_l= xacml_obligation_attributeassignments_length(obligation);
-			show_info("response.result[%d].obligation[%d]: %d attribute assignments",i,j,(int)attrs_l);
-			int k= 0;
-			for (k= 0; k<attrs_l; k++) {
-				xacml_attributeassignment_t * attr= xacml_obligation_getattributeassignment(obligation,k);
-				show_info("response.result[%d].obligation[%d].attributeassignment[%d].id= %s",i,j,k,xacml_attributeassignment_getid(attr));
-				show_info("response.result[%d].obligation[%d].attributeassignment[%d].datatype= %s",i,j,k,xacml_attributeassignment_getdatatype(attr));
-				show_info("response.result[%d].obligation[%d].attributeassignment[%d].value= %s",i,j,k,xacml_attributeassignment_getvalue(attr));
-			}
-		}
-	}
-	return 0;
+        show_info("response.result[%d].resourceid= %s", i, xacml_result_getresourceid(result));
+        xacml_status_t * status= xacml_result_getstatus(result);
+        show_info("response.result[%d].status.message= %s", i, xacml_status_getmessage(status));
+        xacml_statuscode_t * statuscode= xacml_status_getcode(status);
+        show_info("response.result[%d].status.code.value= %s", i, xacml_statuscode_getvalue(statuscode));
+        xacml_statuscode_t * subcode= xacml_statuscode_getsubcode(statuscode);
+        if (subcode != NULL) {
+            show_info("response.result[%d].status.code.subcode.value= %s", i, xacml_statuscode_getvalue(subcode));
+        }
+        size_t obligations_l= xacml_result_obligations_length(result);
+        show_info("response.result[%d]: %d obligations", i, (int)obligations_l);
+        int j=0;
+        for(j= 0; j<obligations_l; j++) {
+            xacml_obligation_t * obligation= xacml_result_getobligation(result,j);
+            show_info("response.result[%d].obligation[%d].id= %s",i,j, xacml_obligation_getid(obligation));
+            show_info("response.result[%d].obligation[%d].fulfillOn= %s",i,j, decision_str(xacml_obligation_getfulfillon(obligation)));
+            size_t attrs_l= xacml_obligation_attributeassignments_length(obligation);
+            show_info("response.result[%d].obligation[%d]: %d attribute assignments",i,j,(int)attrs_l);
+            int k= 0;
+            for (k= 0; k<attrs_l; k++) {
+                xacml_attributeassignment_t * attr= xacml_obligation_getattributeassignment(obligation,k);
+                show_info("response.result[%d].obligation[%d].attributeassignment[%d].id= %s",i,j,k,xacml_attributeassignment_getid(attr));
+                show_info("response.result[%d].obligation[%d].attributeassignment[%d].datatype= %s",i,j,k,xacml_attributeassignment_getdatatype(attr));
+                show_info("response.result[%d].obligation[%d].attributeassignment[%d].value= %s",i,j,k,xacml_attributeassignment_getvalue(attr));
+            }
+        }
+    }
+    return 0;
 }
 
 /**
  * Shows a human readable response.
  */
 static int show_human_response(xacml_response_t * response) {
-	int i, j, k, l;
-	if (response == NULL) {
-		show_error("show_response: response is NULL");
-		return 1;
-	}
-	size_t results_l= xacml_response_results_length(response);
-	for (i= 0; i<results_l; i++) {
-		xacml_result_t * result= xacml_response_getresult(response,i);
-		const char * resource_id= xacml_result_getresourceid(result);
-		if (resource_id!=NULL) {
-			fprintf(stdout,"Resource: %s\n",resource_id);
-		}
-		xacml_decision_t decision= xacml_result_getdecision(result);
-		fprintf(stdout,"Decision: %s\n", decision_str(decision));
-		xacml_status_t * status= xacml_result_getstatus(result);
-		xacml_statuscode_t * statuscode= xacml_status_getcode(status);
-		const char * status_value= xacml_statuscode_getvalue(statuscode);
-		// show status value and message only on not OK
-		if (strcmp(XACML_STATUSCODE_OK,status_value)!=0) {
-			fprintf(stdout,"Status: %s\n", status_value);
-			const char * status_message= xacml_status_getmessage(status);
-			if (status_message) {
-				fprintf(stdout,"Status message: %s\n",status_message);
-			}
-		}
-		size_t obligations_l= xacml_result_obligations_length(result);
-		if (obligations_l==0 && decision==XACML_DECISION_PERMIT) {
-			fprintf(stdout,"No Obligation received\n");
-		}
-		for (j= 0; j<obligations_l; j++) {
-			xacml_obligation_t * obligation= xacml_result_getobligation(result,j);
-			xacml_fulfillon_t fulfillon= xacml_obligation_getfulfillon(obligation);
-			if (fulfillon == decision) {
-				const char * obligation_id= xacml_obligation_getid(obligation);
-				size_t attrs_l= xacml_obligation_attributeassignments_length(obligation);
-				if (strcmp(XACML_GRIDWN_OBLIGATION_LOCAL_ENVIRONMENT_MAP,obligation_id)==0) {
-					fprintf(stdout,"Obligation: %s (caller should do local account mapping)\n",obligation_id);
-				}
-				else if (strcmp(XACML_GRIDWN_OBLIGATION_LOCAL_ENVIRONMENT_MAP_POSIX,obligation_id)==0) {
-					size_t n_groups= 0;
-					char ** groups= calloc(NGROUPS_MAX,sizeof(char *));
-					fprintf(stdout,"Obligation: %s (caller should resolve POSIX account mapping)\n",obligation_id);
-					for (k= 0; k<attrs_l; k++) {
-						xacml_attributeassignment_t * attr= xacml_obligation_getattributeassignment(obligation,k);
-						const char * attr_id= xacml_attributeassignment_getid(attr);
-						const char * attr_value= xacml_attributeassignment_getvalue(attr);
-						if (strcmp(XACML_GRIDWN_ATTRIBUTE_USER_ID,attr_id)==0) {
-							fprintf(stdout,"Username: %s\n",attr_value);
-						}
-						else if (strcmp(XACML_GRIDWN_ATTRIBUTE_GROUP_ID_PRIMARY,attr_id)==0) {
-							fprintf(stdout,"Group: %s\n",attr_value);
-						}
-						else if (strcmp(XACML_GRIDWN_ATTRIBUTE_GROUP_ID,attr_id)==0) {
-							groups[n_groups++]= (char *)attr_value;
-						}
-					}
-					if (n_groups>0) {
-						fprintf(stdout,"Secondary Groups:");
-						for (l= 0; l<n_groups; l++) {
-							fprintf(stdout," %s",groups[l]);
-						}
-						fprintf(stdout,"\n");
-					}
-					free(groups);
-				}
-				else {
-					fprintf(stdout,"Obligation: %s\n",obligation_id);
-				}
-			}
-		}
-	}
-	return 0;
+    int i, j, k, l;
+    if (response == NULL) {
+        show_error("show_response: response is NULL");
+        return 1;
+    }
+    size_t results_l= xacml_response_results_length(response);
+    for (i= 0; i<results_l; i++) {
+        xacml_result_t * result= xacml_response_getresult(response,i);
+        const char * resource_id= xacml_result_getresourceid(result);
+        if (resource_id!=NULL) {
+            fprintf(stdout,"Resource: %s\n",resource_id);
+        }
+        xacml_decision_t decision= xacml_result_getdecision(result);
+        fprintf(stdout,"Decision: %s\n", decision_str(decision));
+        xacml_status_t * status= xacml_result_getstatus(result);
+        xacml_statuscode_t * statuscode= xacml_status_getcode(status);
+        const char * status_value= xacml_statuscode_getvalue(statuscode);
+        // show status value and message only on not OK
+        if (strcmp(XACML_STATUSCODE_OK,status_value)!=0) {
+            fprintf(stdout,"Status: %s\n", status_value);
+            const char * status_message= xacml_status_getmessage(status);
+            if (status_message) {
+                fprintf(stdout,"Status message: %s\n",status_message);
+            }
+        }
+        size_t obligations_l= xacml_result_obligations_length(result);
+        if (obligations_l==0 && decision==XACML_DECISION_PERMIT) {
+            fprintf(stdout,"No Obligation received\n");
+        }
+        for (j= 0; j<obligations_l; j++) {
+            xacml_obligation_t * obligation= xacml_result_getobligation(result,j);
+            xacml_fulfillon_t fulfillon= xacml_obligation_getfulfillon(obligation);
+            if (fulfillon == decision) {
+                const char * obligation_id= xacml_obligation_getid(obligation);
+                size_t attrs_l= xacml_obligation_attributeassignments_length(obligation);
+                if (strcmp(XACML_GRIDWN_OBLIGATION_LOCAL_ENVIRONMENT_MAP,obligation_id)==0) {
+                    fprintf(stdout,"Obligation: %s (caller should do local account mapping)\n",obligation_id);
+                }
+                else if (strcmp(XACML_GRIDWN_OBLIGATION_LOCAL_ENVIRONMENT_MAP_POSIX,obligation_id)==0) {
+                    size_t n_groups= 0;
+                    char ** groups= calloc(NGROUPS_MAX,sizeof(char *));
+                    fprintf(stdout,"Obligation: %s (caller should resolve POSIX account mapping)\n",obligation_id);
+                    for (k= 0; k<attrs_l; k++) {
+                        xacml_attributeassignment_t * attr= xacml_obligation_getattributeassignment(obligation,k);
+                        const char * attr_id= xacml_attributeassignment_getid(attr);
+                        const char * attr_value= xacml_attributeassignment_getvalue(attr);
+                        if (strcmp(XACML_GRIDWN_ATTRIBUTE_USER_ID,attr_id)==0) {
+                            fprintf(stdout,"Username: %s\n",attr_value);
+                        }
+                        else if (strcmp(XACML_GRIDWN_ATTRIBUTE_GROUP_ID_PRIMARY,attr_id)==0) {
+                            fprintf(stdout,"Group: %s\n",attr_value);
+                        }
+                        else if (strcmp(XACML_GRIDWN_ATTRIBUTE_GROUP_ID,attr_id)==0) {
+                            groups[n_groups++]= (char *)attr_value;
+                        }
+                    }
+                    if (n_groups>0) {
+                        fprintf(stdout,"Secondary Groups:");
+                        for (l= 0; l<n_groups; l++) {
+                            fprintf(stdout," %s",groups[l]);
+                        }
+                        fprintf(stdout,"\n");
+                    }
+                    free(groups);
+                }
+                else {
+                    fprintf(stdout,"Obligation: %s\n",obligation_id);
+                }
+            }
+        }
+    }
+    return 0;
 }
 
 static void show_version() {
-	fprintf(stdout,PACKAGE_NAME " v." PACKAGE_VERSION ", %s v.%s\n",pep_version_name(),pep_version());
+    fprintf(stdout,PACKAGE_NAME " v." PACKAGE_VERSION ", %s v.%s\n",pep_version_name(),pep_version());
 }
 
 /**
@@ -805,35 +805,35 @@ static void show_version() {
  */
 static void show_help() {
     show_version();
-	fprintf(stdout,"Usage:\n");
+    fprintf(stdout,"Usage:\n");
     fprintf(stdout,"    pepcli --pepd <URL> --certchain <FILE> [options...]\n");
-	fprintf(stdout,"    pepcli --pepd <URL> --subjectid <DN> [options...]\n");
-	fprintf(stdout,"\n");
-	fprintf(stdout,"Submit a XACML Request to the PEPd and show the XACML Response.\n");
-	fprintf(stdout,"\n");
-	fprintf(stdout,"Options:\n");
-	fprintf(stdout," -p|--pepd <URL>         PEPd endpoint URL. Add multiple --pepd options for failover.\n");
-	fprintf(stdout," -c|--certchain <FILE>   XACML Subject cert-chain: proxy or X509 file.\n");
-	fprintf(stdout," -s|--subjectid <DN>     XACML Subject identifier: user DN (format RFC2253).\n");
-	fprintf(stdout," -f|--fqan <FQAN>        XACML Subject primary FQAN and FQANs\n");
-	fprintf(stdout,"                         Add multiple --fqan options for secondary FQANs.\n");
-	fprintf(stdout," -r|--resourceid <URI>   XACML Resource identifier.\n");
-	fprintf(stdout," -a|--actionid <URI>     XACML Action identifier.\n");
-	fprintf(stdout," -t|--timeout <SEC>      Connection timeout in second (default 30s).\n");
-	fprintf(stdout," -x|--requestcontext     Show effective XACML Request context.\n");
-	fprintf(stdout," -v|--verbose            Verbose.\n");
-	fprintf(stdout," -q|--quiet              Turn off output.\n");
-	fprintf(stdout," -d|--debug              Show debug information.\n");
-	fprintf(stdout," -h|--help               This help.\n");
-	fprintf(stdout," -V|--version            Display version and exit.\n");
-	fprintf(stdout,"TLS options:\n");
-	fprintf(stdout," --capath <DIR>          Directory containing the server PEM encoded CA certificates.\n");
-	fprintf(stdout," --cacert <FILE>         Server PEM encoded CA certificate filename.\n");
-	fprintf(stdout," --cert <FILE>           Client PEM encoded certificate filename.\n");
-	fprintf(stdout," --key <FILE>            Client PEM encoded private key filename.\n");
-	fprintf(stdout," --keypasswd <PASSWD>    Password of the client private key\n");
-	fprintf(stdout,"                         If the --keypasswd is omitted and the private key is encrypted,\n");
-	fprintf(stdout,"                         then you will be prompted for the password.\n");
+    fprintf(stdout,"    pepcli --pepd <URL> --subjectid <DN> [options...]\n");
+    fprintf(stdout,"\n");
+    fprintf(stdout,"Submit a XACML Request to the PEPd and show the XACML Response.\n");
+    fprintf(stdout,"\n");
+    fprintf(stdout,"Options:\n");
+    fprintf(stdout," -p|--pepd <URL>         PEPd endpoint URL. Add multiple --pepd options for failover.\n");
+    fprintf(stdout," -c|--certchain <FILE>   XACML Subject cert-chain: proxy or X509 file.\n");
+    fprintf(stdout," -s|--subjectid <DN>     XACML Subject identifier: user DN (format RFC2253).\n");
+    fprintf(stdout," -f|--fqan <FQAN>        XACML Subject primary FQAN and FQANs\n");
+    fprintf(stdout,"                         Add multiple --fqan options for secondary FQANs.\n");
+    fprintf(stdout," -r|--resourceid <URI>   XACML Resource identifier.\n");
+    fprintf(stdout," -a|--actionid <URI>     XACML Action identifier.\n");
+    fprintf(stdout," -t|--timeout <SEC>      Connection timeout in second (default 30s).\n");
+    fprintf(stdout," -x|--requestcontext     Show effective XACML Request context.\n");
+    fprintf(stdout," -v|--verbose            Verbose.\n");
+    fprintf(stdout," -q|--quiet              Turn off output.\n");
+    fprintf(stdout," -d|--debug              Show debug information.\n");
+    fprintf(stdout," -h|--help               This help.\n");
+    fprintf(stdout," -V|--version            Display version and exit.\n");
+    fprintf(stdout,"TLS options:\n");
+    fprintf(stdout," --capath <DIR>          Directory containing the server PEM encoded CA certificates.\n");
+    fprintf(stdout," --cacert <FILE>         Server PEM encoded CA certificate filename.\n");
+    fprintf(stdout," --cert <FILE>           Client PEM encoded certificate filename.\n");
+    fprintf(stdout," --key <FILE>            Client PEM encoded private key filename.\n");
+    fprintf(stdout," --keypasswd <PASSWD>    Password of the client private key\n");
+    fprintf(stdout,"                         If the --keypasswd is omitted and the private key is encrypted,\n");
+    fprintf(stdout,"                         then you will be prompted for the password.\n");
 
 }
 
@@ -841,379 +841,379 @@ static void show_help() {
  * Main: pepcli
  */
 int main(int argc, char **argv) {
-	linkedlist_t * pepds= llist_create();
-	if (pepds==NULL) {
-		show_error("Can not allocate PEPd url list.");
-		exit(E_MEMORY);
-	}
-	linkedlist_t * fqans= llist_create();
-	if (fqans==NULL) {
-		show_error("Can not allocate FQAN list.");
-		llist_delete(pepds);
-		exit(E_MEMORY);
-	}
-	// parse arguments
-	int c;
-	while ((c= getopt_long(argc, argv, "dqvp:s:t:r:a:c:f:xhV1:2:3:4:5:", long_options, NULL)) != -1) {
-		switch(c) {
-		case 'd':
-			debug= 1;
-			show_debug("debug set.");
-			break;
-		case 'q':
-			quiet= 1;
-			show_debug("quiet set.");
-			break;
-		case 'v':
-			show_debug("verbose set.");
-			verbose= 1;
-			break;
-		case 'x':
-			show_debug("show effective Request context.");
-			req_context= 1;
-			break;
-		case 'p':
-			show_debug("pepd: %s",optarg);
-			// add url to list
-			if (strlen(optarg) > 0) {
-				llist_add(pepds,optarg);
-			}
-			break;
-		case 'f':
-			show_debug("fqan: %s",optarg);
-			// add fqan to list
-			if (strlen(optarg) > 0) {
-				llist_add(fqans,optarg);
-			}
-			break;
-		case 's':
-			show_debug("subjectid: %s",optarg);
-			if (strlen(optarg) > 0) {
-				subjectid= optarg;
-			}
-			break;
-		case 'c':
-			show_debug("certchain: %s",optarg);
-			if (strlen(optarg) > 0) {
-				certchain_filename= optarg;
-			}
-			break;
-		case 'r':
-			show_debug("resourceid: %s",optarg);
-			if (strlen(optarg) > 0) {
-				resourceid= optarg;
-			}
-			break;
-		case 'a':
-			show_debug("actionid: %s",optarg);
-			if (strlen(optarg) > 0) {
-				actionid= optarg;
-			}
-			break;
-		case 't':
-			show_debug("timeout: %s",optarg);
-			timeout= (int)strtol(optarg,NULL,10);
-			if (errno == EINVAL || errno == ERANGE || timeout <= 0) {
-				timeout= -1;
-				show_warn("timeout %s can not be converted. Using default.",optarg);
-			}
-			break;
-		case 'h':
-			show_help();
-			exit(E_OK);
-			break;
-		case 'V':
-			show_version();
-			exit(E_OK);
-			break;
-		case '1':
-			show_debug("capath: %s",optarg);
-			if (strlen(optarg) > 0) {
-				capath_directory= optarg;
-			}
-			break;
-		case '2':
-			show_debug("cert: %s",optarg);
-			if (strlen(optarg) > 0) {
-				cert_filename= optarg;
-			}
-			break;
-		case '3':
-			show_debug("key: %s",optarg);
-			if (strlen(optarg) > 0) {
-				key_filename= optarg;
-			}
-			break;
-		case '4':
-			show_debug("keypasswd: %s",optarg);
-			if (strlen(optarg) > 0) {
-				key_password= optarg;
-			}
-			break;
-		case '5':
-			show_debug("cacert: %s",optarg);
-			if (strlen(optarg) > 0) {
-				cacert_filename= optarg;
-			}
-			break;
-		case '?':
+    linkedlist_t * pepds= llist_create();
+    if (pepds==NULL) {
+        show_error("Can not allocate PEPd url list.");
+        exit(E_MEMORY);
+    }
+    linkedlist_t * fqans= llist_create();
+    if (fqans==NULL) {
+        show_error("Can not allocate FQAN list.");
+        llist_delete(pepds);
+        exit(E_MEMORY);
+    }
+    // parse arguments
+    int c;
+    while ((c= getopt_long(argc, argv, "dqvp:s:t:r:a:c:f:xhV1:2:3:4:5:", long_options, NULL)) != -1) {
+        switch(c) {
+        case 'd':
+            debug= 1;
+            show_debug("debug set.");
+            break;
+        case 'q':
+            quiet= 1;
+            show_debug("quiet set.");
+            break;
+        case 'v':
+            show_debug("verbose set.");
+            verbose= 1;
+            break;
+        case 'x':
+            show_debug("show effective Request context.");
+            req_context= 1;
+            break;
+        case 'p':
+            show_debug("pepd: %s",optarg);
+            // add url to list
+            if (strlen(optarg) > 0) {
+                llist_add(pepds,optarg);
+            }
+            break;
+        case 'f':
+            show_debug("fqan: %s",optarg);
+            // add fqan to list
+            if (strlen(optarg) > 0) {
+                llist_add(fqans,optarg);
+            }
+            break;
+        case 's':
+            show_debug("subjectid: %s",optarg);
+            if (strlen(optarg) > 0) {
+                subjectid= optarg;
+            }
+            break;
+        case 'c':
+            show_debug("certchain: %s",optarg);
+            if (strlen(optarg) > 0) {
+                certchain_filename= optarg;
+            }
+            break;
+        case 'r':
+            show_debug("resourceid: %s",optarg);
+            if (strlen(optarg) > 0) {
+                resourceid= optarg;
+            }
+            break;
+        case 'a':
+            show_debug("actionid: %s",optarg);
+            if (strlen(optarg) > 0) {
+                actionid= optarg;
+            }
+            break;
+        case 't':
+            show_debug("timeout: %s",optarg);
+            timeout= (int)strtol(optarg,NULL,10);
+            if (errno == EINVAL || errno == ERANGE || timeout <= 0) {
+                timeout= -1;
+                show_warn("timeout %s can not be converted. Using default.",optarg);
+            }
+            break;
+        case 'h':
+            show_help();
+            exit(E_OK);
+            break;
+        case 'V':
+            show_version();
+            exit(E_OK);
+            break;
+        case '1':
+            show_debug("capath: %s",optarg);
+            if (strlen(optarg) > 0) {
+                capath_directory= optarg;
+            }
+            break;
+        case '2':
+            show_debug("cert: %s",optarg);
+            if (strlen(optarg) > 0) {
+                cert_filename= optarg;
+            }
+            break;
+        case '3':
+            show_debug("key: %s",optarg);
+            if (strlen(optarg) > 0) {
+                key_filename= optarg;
+            }
+            break;
+        case '4':
+            show_debug("keypasswd: %s",optarg);
+            if (strlen(optarg) > 0) {
+                key_password= optarg;
+            }
+            break;
+        case '5':
+            show_debug("cacert: %s",optarg);
+            if (strlen(optarg) > 0) {
+                cacert_filename= optarg;
+            }
+            break;
+        case '?':
             // getopt_long already printed an error message.
-			exit(E_OPTION);
-			break;
-		default:
-			break;
-		}
-	}
+            exit(E_OPTION);
+            break;
+        default:
+            break;
+        }
+    }
 
-	// check mandatory options: --pepd URL (--certchain FILE|--subjectid ID)
-	size_t pepds_l= llist_length(pepds);
-	if (pepds_l<1) {
-		show_error("the mandatory option -p|--pepd <URL> is missing");
-		//show_help();
-		exit(E_OPTION);
-	}
+    // check mandatory options: --pepd URL (--certchain FILE|--subjectid ID)
+    size_t pepds_l= llist_length(pepds);
+    if (pepds_l<1) {
+        show_error("the mandatory option -p|--pepd <URL> is missing");
+        //show_help();
+        exit(E_OPTION);
+    }
     if (certchain_filename==NULL && subjectid==NULL) {
-		show_error("one of the mandatory option -c|--certchain <FILE> or -s|--subjectid <DN> is missing");
-		//show_help();
-		exit(E_OPTION);        
+        show_error("one of the mandatory option -c|--certchain <FILE> or -s|--subjectid <DN> is missing");
+        //show_help();
+        exit(E_OPTION);        
     }
     // mutually exclusive
     if (certchain_filename!=NULL && subjectid!=NULL) {
-		show_error("the mandatory options -c|--certchain <FILE> or -s|--subjectid <DN> are mutually exclusive");
-		//show_help();
-		exit(E_OPTION);        
+        show_error("the mandatory options -c|--certchain <FILE> or -s|--subjectid <DN> are mutually exclusive");
+        //show_help();
+        exit(E_OPTION);        
     }
 
     // TLS: check that --cert AND --key are both entered
     if (cert_filename!=NULL && key_filename==NULL) {
-    	show_error("TLS option --cert <FILE> requires option --key <FILE>");
-    	exit(E_OPTION);
+        show_error("TLS option --cert <FILE> requires option --key <FILE>");
+        exit(E_OPTION);
     }
     if (key_filename!=NULL && cert_filename==NULL) {
-    	show_error("TLS option --key <FILE> requires option --cert <FILE>");
-    	exit(E_OPTION);
+        show_error("TLS option --key <FILE> requires option --cert <FILE>");
+        exit(E_OPTION);
     }
 
     // check files options (exists and readable)
     if (certchain_filename!=NULL && !file_is_readable(certchain_filename)) {
-		show_error("the -c|--certchain %s does not exist or is not readable",certchain_filename);
-		exit(E_CERTCHAIN);
+        show_error("the -c|--certchain %s does not exist or is not readable",certchain_filename);
+        exit(E_CERTCHAIN);
     }
     if (cacert_filename!=NULL && !file_is_readable(cacert_filename)) {
-		show_error("the --cacert %s does not exist or is not readable",cacert_filename);
-		exit(E_CACERT);
+        show_error("the --cacert %s does not exist or is not readable",cacert_filename);
+        exit(E_CACERT);
     }
     if (capath_directory!=NULL && !file_is_readable(capath_directory)) {
-		show_error("the --capath %s does not exist or is not readable",capath_directory);
-		exit(E_CAPATH);
+        show_error("the --capath %s does not exist or is not readable",capath_directory);
+        exit(E_CAPATH);
     }
     if (cert_filename!=NULL && !file_is_readable(cert_filename)) {
-		show_error("the --cert %s does not exist or is not readable",cert_filename);
-		exit(E_CERT);
+        show_error("the --cert %s does not exist or is not readable",cert_filename);
+        exit(E_CERT);
     }
     if (key_filename!=NULL && !file_is_readable(key_filename)) {
-		show_error("the --key %s does not exist or is not readable",key_filename);
-		exit(E_KEY);
+        show_error("the --key %s does not exist or is not readable",key_filename);
+        exit(E_KEY);
     }
 
     // check private key encryption password
     if (key_filename!=NULL && key_is_encrypted(key_filename)) {
-    	// prompt for key passwd if not given as parameter
-		if (key_password==NULL) {
-			key_password= getpass("Key password: ");
-			if (strlen(key_password)==0) {
-				show_error("key is encrypted, empty password not valid");
-				exit(E_KEY);
-			}
-		}
+        // prompt for key passwd if not given as parameter
+        if (key_password==NULL) {
+            key_password= getpass("Key password: ");
+            if (strlen(key_password)==0) {
+                show_error("key is encrypted, empty password not valid");
+                exit(E_KEY);
+            }
+        }
     }
 
-	// show parameters
-	int i= 0;
-	for(i= 0; i<pepds_l; i++) {
-		show_info("pepd: %s",(char *)llist_get(pepds,i));
-	}
-	if (subjectid!=NULL) {
-		show_info("subjectid: %s", subjectid);
-	}
-	if (certchain_filename!=NULL) {
-		show_info("certchain: %s", certchain_filename);
-	}
-	if (resourceid!=NULL) {
-		show_info("resourceid: %s", resourceid);
-	}
-	if (actionid!=NULL) {
-		show_info("actionid: %s",actionid);
-	}
-	size_t fqans_l= llist_length(fqans);
-	for (i= 0; i<fqans_l; i++) {
-		char * fqan= (char *)llist_get(fqans,i);
-		if (i==0)
-			show_info("fqan: %s (primary)",fqan);
-		else
-			show_info("fqan: %s",fqan);
-	}
-	// show TLS options
-	if (cacert_filename!=NULL) {
-		show_info("cacert: %s", cacert_filename);
-	}
-	if (capath_directory!=NULL) {
-		show_info("capath: %s", capath_directory);
-	}
-	if (cert_filename!=NULL) {
-		show_info("cert: %s", cert_filename);
-	}
-	if (key_filename!=NULL) {
-		show_info("key: %s", key_filename);
-		if (key_password!=NULL) {
-			show_info("key passwd: %d chars",(int)strlen(key_password));
-		}
-	}
+    // show parameters
+    int i= 0;
+    for(i= 0; i<pepds_l; i++) {
+        show_info("pepd: %s",(char *)llist_get(pepds,i));
+    }
+    if (subjectid!=NULL) {
+        show_info("subjectid: %s", subjectid);
+    }
+    if (certchain_filename!=NULL) {
+        show_info("certchain: %s", certchain_filename);
+    }
+    if (resourceid!=NULL) {
+        show_info("resourceid: %s", resourceid);
+    }
+    if (actionid!=NULL) {
+        show_info("actionid: %s",actionid);
+    }
+    size_t fqans_l= llist_length(fqans);
+    for (i= 0; i<fqans_l; i++) {
+        char * fqan= (char *)llist_get(fqans,i);
+        if (i==0)
+            show_info("fqan: %s (primary)",fqan);
+        else
+            show_info("fqan: %s",fqan);
+    }
+    // show TLS options
+    if (cacert_filename!=NULL) {
+        show_info("cacert: %s", cacert_filename);
+    }
+    if (capath_directory!=NULL) {
+        show_info("capath: %s", capath_directory);
+    }
+    if (cert_filename!=NULL) {
+        show_info("cert: %s", cert_filename);
+    }
+    if (key_filename!=NULL) {
+        show_info("key: %s", key_filename);
+        if (key_password!=NULL) {
+            show_info("key passwd: %d chars",(int)strlen(key_password));
+        }
+    }
 
-	// read certchain file
-	if (certchain_filename!=NULL) {
-		show_debug("read certchain from: %s",certchain_filename);
-		certchain= read_certchain(certchain_filename);
-		if (certchain==NULL) {
-			show_error("certchain %s not found or doesn't contain certificate",certchain_filename);
-			exit(E_CERTCHAIN);
-		}
-		show_debug("certchain:[\n%s]", certchain);
-	}
+    // read certchain file
+    if (certchain_filename!=NULL) {
+        show_debug("read certchain from: %s",certchain_filename);
+        certchain= read_certchain(certchain_filename);
+        if (certchain==NULL) {
+            show_error("certchain %s not found or doesn't contain certificate",certchain_filename);
+            exit(E_CERTCHAIN);
+        }
+        show_debug("certchain:[\n%s]", certchain);
+    }
 
-	// PEP client
-	show_debug("create PEP client...");
-	pep_error_t pep_rc= pep_initialize();
-	if (pep_rc!=PEP_OK) {
-		show_error("failed to init PEP client: %s", pep_strerror(pep_rc));
-	    pep_destroy();
-		exit(E_PEPC);
-	}
-	//
-	// PEP client options
-	//
-	// verbose and debug
-	pep_setoption(PEP_OPTION_LOG_HANDLER,log_handler_pep);
-	if (debug) {
-		pep_setoption(PEP_OPTION_LOG_LEVEL,PEP_LOGLEVEL_DEBUG);
-	}
-	else if (verbose && !quiet) {
-		pep_setoption(PEP_OPTION_LOG_LEVEL,PEP_LOGLEVEL_INFO);
-	}
-	// endpoint urls
-	for(i=0; i<pepds_l; i++) {
-		char * url= llist_get(pepds,i);
-		show_debug("set PEPd url: %s",url);
-		pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_URL,url);
-		if (pep_rc!=PEP_OK) {
-			show_error("failed to set PEPd url: %s: %s",url,pep_strerror(pep_rc));
-	        pep_destroy();
-			exit(E_PEPC);
-		}
-	}
-	// connection timeout
-	if (timeout>0) {
-		show_debug("set PEP-C client timeout: %d",timeout);
-		pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_TIMEOUT, timeout);
-		if (pep_rc!=PEP_OK) {
-			show_warn("failed to set PEP client timeout: %d: %s",timeout,pep_strerror(pep_rc));
-		}
-	}
+    // PEP client
+    show_debug("create PEP client...");
+    pep_error_t pep_rc= pep_initialize();
+    if (pep_rc!=PEP_OK) {
+        show_error("failed to init PEP client: %s", pep_strerror(pep_rc));
+        pep_destroy();
+        exit(E_PEPC);
+    }
+    //
+    // PEP client options
+    //
+    // verbose and debug
+    pep_setoption(PEP_OPTION_LOG_HANDLER,log_handler_pep);
+    if (debug) {
+        pep_setoption(PEP_OPTION_LOG_LEVEL,PEP_LOGLEVEL_DEBUG);
+    }
+    else if (verbose && !quiet) {
+        pep_setoption(PEP_OPTION_LOG_LEVEL,PEP_LOGLEVEL_INFO);
+    }
+    // endpoint urls
+    for(i=0; i<pepds_l; i++) {
+        char * url= llist_get(pepds,i);
+        show_debug("set PEPd url: %s",url);
+        pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_URL,url);
+        if (pep_rc!=PEP_OK) {
+            show_error("failed to set PEPd url: %s: %s",url,pep_strerror(pep_rc));
+            pep_destroy();
+            exit(E_PEPC);
+        }
+    }
+    // connection timeout
+    if (timeout>0) {
+        show_debug("set PEP-C client timeout: %d",timeout);
+        pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_TIMEOUT, timeout);
+        if (pep_rc!=PEP_OK) {
+            show_warn("failed to set PEP client timeout: %d: %s",timeout,pep_strerror(pep_rc));
+        }
+    }
 
-	// TLS/SSL trust anchors and client authentication
-	if (capath_directory==NULL && cacert_filename==NULL) {
-		// no SSL validation
-		show_debug("no CA cert or path: PEPd SSL validation disabled");
-		pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_SSL_VALIDATION, 0);
-		if (pep_rc!=PEP_OK) {
-			show_warn("failed to disable PEPd SSL validation: %s",pep_strerror(pep_rc));
-		}
-	}
-	else {
-		// enable SSL validation + CApath trust anchors
-		show_debug("enabling peers SSL validation");
-		pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_SSL_VALIDATION, 1);
-		if (pep_rc!=PEP_OK) {
-			show_error("failed to enable PEPd SSL validation: %s",pep_strerror(pep_rc));
-		}
-		show_debug("setting SSL ciphers: 'DEFAULT:-ECDH' (OpenSSL 1.0.0 bug fix)");
-		pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_SSL_CIPHER_LIST, "DEFAULT:-ECDH");
-		if (pep_rc!=PEP_OK) {
-			show_error("failed to set SSL ciphers: %s",pep_strerror(pep_rc));
-		}
-	}
+    // TLS/SSL trust anchors and client authentication
+    if (capath_directory==NULL && cacert_filename==NULL) {
+        // no SSL validation
+        show_debug("no CA cert or path: PEPd SSL validation disabled");
+        pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_SSL_VALIDATION, 0);
+        if (pep_rc!=PEP_OK) {
+            show_warn("failed to disable PEPd SSL validation: %s",pep_strerror(pep_rc));
+        }
+    }
+    else {
+        // enable SSL validation + CApath trust anchors
+        show_debug("enabling peers SSL validation");
+        pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_SSL_VALIDATION, 1);
+        if (pep_rc!=PEP_OK) {
+            show_error("failed to enable PEPd SSL validation: %s",pep_strerror(pep_rc));
+        }
+        show_debug("setting SSL ciphers: 'DEFAULT:-ECDH' (OpenSSL 1.0.0 bug fix)");
+        pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_SSL_CIPHER_LIST, "DEFAULT:-ECDH");
+        if (pep_rc!=PEP_OK) {
+            show_error("failed to set SSL ciphers: %s",pep_strerror(pep_rc));
+        }
+    }
 
-	if (capath_directory!=NULL) {
-		show_debug("setting server trust anchors CA path: %s",capath_directory);
-		pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_SERVER_CAPATH,capath_directory);
-		if (pep_rc!=PEP_OK) {
-			show_error("failed to set server CA path: %s: %s",capath_directory,pep_strerror(pep_rc));
-		}
-	}
-	if (cacert_filename!=NULL) {
-		show_debug("setting server trust anchor certificate: %s",cacert_filename);
-		pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_SERVER_CERT,cacert_filename);
-		if (pep_rc!=PEP_OK) {
-			show_error("failed to set server cert: %s: %s",cacert_filename,pep_strerror(pep_rc));
-		}
-	}
-	if (cert_filename!=NULL && key_filename!=NULL) {
-		show_debug("enabling TLS client authN: %s, %s",cert_filename,key_filename);
-		pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_CLIENT_CERT,cert_filename);
-		if (pep_rc!=PEP_OK) {
-			show_error("failed to set client cert: %s: %s",cert_filename,pep_strerror(pep_rc));
-		}
-		pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_CLIENT_KEY,key_filename);
-		if (pep_rc!=PEP_OK) {
-			show_error("failed to set client key: %s: %s",key_filename,pep_strerror(pep_rc));
-		}
-		if (key_password!=NULL) {
-			pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_CLIENT_KEYPASSWORD,key_password);
-			if (pep_rc!=PEP_OK) {
-				show_error("failed to set client key password: %s (%s): %s",key_password,key_filename,pep_strerror(pep_rc));
-			}
-		}
-	}
+    if (capath_directory!=NULL) {
+        show_debug("setting server trust anchors CA path: %s",capath_directory);
+        pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_SERVER_CAPATH,capath_directory);
+        if (pep_rc!=PEP_OK) {
+            show_error("failed to set server CA path: %s: %s",capath_directory,pep_strerror(pep_rc));
+        }
+    }
+    if (cacert_filename!=NULL) {
+        show_debug("setting server trust anchor certificate: %s",cacert_filename);
+        pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_SERVER_CERT,cacert_filename);
+        if (pep_rc!=PEP_OK) {
+            show_error("failed to set server cert: %s: %s",cacert_filename,pep_strerror(pep_rc));
+        }
+    }
+    if (cert_filename!=NULL && key_filename!=NULL) {
+        show_debug("enabling TLS client authN: %s, %s",cert_filename,key_filename);
+        pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_CLIENT_CERT,cert_filename);
+        if (pep_rc!=PEP_OK) {
+            show_error("failed to set client cert: %s: %s",cert_filename,pep_strerror(pep_rc));
+        }
+        pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_CLIENT_KEY,key_filename);
+        if (pep_rc!=PEP_OK) {
+            show_error("failed to set client key: %s: %s",key_filename,pep_strerror(pep_rc));
+        }
+        if (key_password!=NULL) {
+            pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_CLIENT_KEYPASSWORD,key_password);
+            if (pep_rc!=PEP_OK) {
+                show_error("failed to set client key password: %s (%s): %s",key_password,key_filename,pep_strerror(pep_rc));
+            }
+        }
+    }
 
-	show_debug("create XACML subject");
-	xacml_subject_t * subject= xacml_subject_create();
-	// subject-id, cert-chain and VOMS FQANs are all one Subject!!!
-	xacml_subject_t * subject_id= create_xacml_subject_id(subjectid);
-	merge_xacml_subject_attrs_into(subject_id,subject);
-	xacml_subject_t * subject_keyinfo= create_xacml_subject_keyinfo(certchain);
-	merge_xacml_subject_attrs_into(subject_keyinfo,subject);
-	xacml_subject_t * subject_fqans= create_xacml_subject_fqans(fqans);
-	merge_xacml_subject_attrs_into(subject_fqans,subject);
-	// resource-id and action-id
-	xacml_resource_t * resource= create_xacml_resource_id(resourceid);
-	xacml_action_t * action= create_xacml_action_id(actionid);
-	show_debug("create XACML request");
-	xacml_request_t * request= create_xacml_request(subject,resource,action);
-	if (request==NULL) {
-		show_error("failed to create XACML request");
-		exit(E_XACMLREQ);
-	}
+    show_debug("create XACML subject");
+    xacml_subject_t * subject= xacml_subject_create();
+    // subject-id, cert-chain and VOMS FQANs are all one Subject!!!
+    xacml_subject_t * subject_id= create_xacml_subject_id(subjectid);
+    merge_xacml_subject_attrs_into(subject_id,subject);
+    xacml_subject_t * subject_keyinfo= create_xacml_subject_keyinfo(certchain);
+    merge_xacml_subject_attrs_into(subject_keyinfo,subject);
+    xacml_subject_t * subject_fqans= create_xacml_subject_fqans(fqans);
+    merge_xacml_subject_attrs_into(subject_fqans,subject);
+    // resource-id and action-id
+    xacml_resource_t * resource= create_xacml_resource_id(resourceid);
+    xacml_action_t * action= create_xacml_action_id(actionid);
+    show_debug("create XACML request");
+    xacml_request_t * request= create_xacml_request(subject,resource,action);
+    if (request==NULL) {
+        show_error("failed to create XACML request");
+        exit(E_XACMLREQ);
+    }
 
-	// XXX test PIP and OH
-	if (debug && verbose) {
-		show_debug("debug is on: enabling PIP and OH profile adapters: %s and %s", authzinterop2gridwn_adapter_pip->id,gridwn2authzinterop_adapter_oh->id);
-		if((pep_rc= pep_addpip(authzinterop2gridwn_adapter_pip)) != PEP_OK) {
-			show_error("failed to enable PIP profile adapter: %s", pep_strerror(pep_rc));
-		}
-		if((pep_rc= pep_addobligationhandler(gridwn2authzinterop_adapter_oh)) != PEP_OK) {
-			show_error("failed to enable OH profile adapter: %s", pep_strerror(pep_rc));
-		}
-	}
+    // XXX test PIP and OH
+    if (debug && verbose) {
+        show_debug("debug is on: enabling PIP and OH profile adapters: %s and %s", authzinterop2gridwn_adapter_pip->id,gridwn2authzinterop_adapter_oh->id);
+        if((pep_rc= pep_addpip(authzinterop2gridwn_adapter_pip)) != PEP_OK) {
+            show_error("failed to enable PIP profile adapter: %s", pep_strerror(pep_rc));
+        }
+        if((pep_rc= pep_addobligationhandler(gridwn2authzinterop_adapter_oh)) != PEP_OK) {
+            show_error("failed to enable OH profile adapter: %s", pep_strerror(pep_rc));
+        }
+    }
 
-	// submit request
-	show_info("authorize XACML request");
-	xacml_response_t * response= NULL;
-	pep_rc= pep_authorize(&request,&response);
-	if (pep_rc!=PEP_OK) {
-		show_error("failed to authorize XACML request: %s",pep_strerror(pep_rc));
-	    pep_destroy();
-		exit(E_PEPC);
-	}
+    // submit request
+    show_info("authorize XACML request");
+    xacml_response_t * response= NULL;
+    pep_rc= pep_authorize(&request,&response);
+    if (pep_rc!=PEP_OK) {
+        show_error("failed to authorize XACML request: %s",pep_strerror(pep_rc));
+        pep_destroy();
+        exit(E_PEPC);
+    }
     if (!quiet) {
         if (req_context) {
             show_xacml_request(request);
@@ -1222,15 +1222,15 @@ int main(int argc, char **argv) {
         show_human_response(response);
     }
 
-	// clean up
-	pep_destroy();
-	xacml_request_delete(request);
-	xacml_response_delete(response);
-	llist_delete(pepds);
-	llist_delete(fqans);
-	if (certchain!=NULL) free(certchain);
+    // clean up
+    pep_destroy();
+    xacml_request_delete(request);
+    xacml_response_delete(response);
+    llist_delete(pepds);
+    llist_delete(fqans);
+    if (certchain!=NULL) free(certchain);
 
-	//show_info("done.");
+    //show_info("done.");
 
-	exit(E_OK);
+    exit(E_OK);
 }
