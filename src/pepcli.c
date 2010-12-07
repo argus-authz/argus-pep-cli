@@ -60,7 +60,7 @@ void log_handler_pep(int level, const char * format, va_list args);
 
 // program options
 static struct option long_options[] = {
-   // PEPd endpoint URL(s)
+   // PEPd endpoint URL
    {"pepd", required_argument, 0, 'p'},
    {"certchain", required_argument, 0, 'c'},
    {"subjectid", required_argument, 0, 's'},
@@ -91,6 +91,7 @@ int quiet= 0;
 // option intern
 static int req_context= 0;
 static long timeout= -1;
+static char * pepd_url= NULL;
 static char * certchain_filename= NULL;
 static char * certchain= NULL;
 static char * subjectid= NULL;
@@ -797,7 +798,7 @@ static int show_human_response(xacml_response_t * response) {
 }
 
 static void show_version() {
-    fprintf(stdout,PACKAGE_NAME " v." PACKAGE_VERSION ", %s v.%s\n",pep_version_name(),pep_version());
+    fprintf(stdout,PACKAGE_NAME "/" PACKAGE_VERSION " [%s]\n",pep_version());
 }
 
 /**
@@ -812,7 +813,7 @@ static void show_help() {
     fprintf(stdout,"Submit a XACML Request to the PEPd and show the XACML Response.\n");
     fprintf(stdout,"\n");
     fprintf(stdout,"Options:\n");
-    fprintf(stdout," -p|--pepd <URL>         PEPd endpoint URL. Add multiple --pepd options for failover.\n");
+    fprintf(stdout," -p|--pepd <URL>         Argus PEP server endpoint URL.\n");
     fprintf(stdout," -c|--certchain <FILE>   XACML Subject cert-chain: proxy or X509 file.\n");
     fprintf(stdout," -s|--subjectid <DN>     XACML Subject identifier: user DN (format RFC2253).\n");
     fprintf(stdout," -f|--fqan <FQAN>        XACML Subject primary FQAN and FQANs\n");
@@ -841,15 +842,10 @@ static void show_help() {
  * Main: pepcli
  */
 int main(int argc, char **argv) {
-    linkedlist_t * pepds= llist_create();
-    if (pepds==NULL) {
-        show_error("Can not allocate PEPd url list.");
-        exit(E_MEMORY);
-    }
+    PEP * pep;
     linkedlist_t * fqans= llist_create();
     if (fqans==NULL) {
         show_error("Can not allocate FQAN list.");
-        llist_delete(pepds);
         exit(E_MEMORY);
     }
     // parse arguments
@@ -874,9 +870,8 @@ int main(int argc, char **argv) {
             break;
         case 'p':
             show_debug("pepd: %s",optarg);
-            // add url to list
             if (strlen(optarg) > 0) {
-                llist_add(pepds,optarg);
+                pepd_url= optarg;
             }
             break;
         case 'f':
@@ -966,8 +961,7 @@ int main(int argc, char **argv) {
     }
 
     // check mandatory options: --pepd URL (--certchain FILE|--subjectid ID)
-    size_t pepds_l= llist_length(pepds);
-    if (pepds_l<1) {
+    if (pepd_url==NULL) {
         show_error("the mandatory option -p|--pepd <URL> is missing");
         //show_help();
         exit(E_OPTION);
@@ -1029,10 +1023,7 @@ int main(int argc, char **argv) {
     }
 
     // show parameters
-    int i= 0;
-    for(i= 0; i<pepds_l; i++) {
-        show_info("pepd: %s",(char *)llist_get(pepds,i));
-    }
+    show_info("pepd: %s", pepd_url);
     if (subjectid!=NULL) {
         show_info("subjectid: %s", subjectid);
     }
@@ -1046,6 +1037,7 @@ int main(int argc, char **argv) {
         show_info("actionid: %s",actionid);
     }
     size_t fqans_l= llist_length(fqans);
+    int i;
     for (i= 0; i<fqans_l; i++) {
         char * fqan= (char *)llist_get(fqans,i);
         if (i==0)
@@ -1083,38 +1075,34 @@ int main(int argc, char **argv) {
 
     // PEP client
     show_debug("create PEP client...");
-    pep_error_t pep_rc= pep_initialize();
-    if (pep_rc!=PEP_OK) {
-        show_error("failed to init PEP client: %s", pep_strerror(pep_rc));
-        pep_destroy();
+    pep= pep_initialize();
+    if (pep == NULL) {
+        show_error("failed to init PEP client");
         exit(E_PEPC);
     }
     //
     // PEP client options
     //
     // verbose and debug
-    pep_setoption(PEP_OPTION_LOG_HANDLER,log_handler_pep);
+    pep_setoption(pep,PEP_OPTION_LOG_HANDLER,log_handler_pep);
     if (debug) {
-        pep_setoption(PEP_OPTION_LOG_LEVEL,PEP_LOGLEVEL_DEBUG);
+        pep_setoption(pep,PEP_OPTION_LOG_LEVEL,PEP_LOGLEVEL_DEBUG);
     }
     else if (verbose && !quiet) {
-        pep_setoption(PEP_OPTION_LOG_LEVEL,PEP_LOGLEVEL_INFO);
+        pep_setoption(pep,PEP_OPTION_LOG_LEVEL,PEP_LOGLEVEL_INFO);
     }
     // endpoint urls
-    for(i=0; i<pepds_l; i++) {
-        char * url= llist_get(pepds,i);
-        show_debug("set PEPd url: %s",url);
-        pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_URL,url);
-        if (pep_rc!=PEP_OK) {
-            show_error("failed to set PEPd url: %s: %s",url,pep_strerror(pep_rc));
-            pep_destroy();
-            exit(E_PEPC);
-        }
+    show_debug("set PEPd url: %s",pepd_url);
+    pep_error_t pep_rc= pep_setoption(pep,PEP_OPTION_ENDPOINT_URL,pepd_url);
+    if (pep_rc!=PEP_OK) {
+        show_error("failed to set PEPd url: %s: %s",pepd_url,pep_strerror(pep_rc));
+        pep_destroy(pep);
+        exit(E_PEPC);
     }
     // connection timeout
     if (timeout>0) {
         show_debug("set PEP-C client timeout: %d",timeout);
-        pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_TIMEOUT, timeout);
+        pep_rc= pep_setoption(pep,PEP_OPTION_ENDPOINT_TIMEOUT, timeout);
         if (pep_rc!=PEP_OK) {
             show_warn("failed to set PEP client timeout: %d: %s",timeout,pep_strerror(pep_rc));
         }
@@ -1124,7 +1112,7 @@ int main(int argc, char **argv) {
     if (capath_directory==NULL && cacert_filename==NULL) {
         // no SSL validation
         show_debug("no CA cert or path: PEPd SSL validation disabled");
-        pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_SSL_VALIDATION, 0);
+        pep_rc= pep_setoption(pep,PEP_OPTION_ENDPOINT_SSL_VALIDATION, 0);
         if (pep_rc!=PEP_OK) {
             show_warn("failed to disable PEPd SSL validation: %s",pep_strerror(pep_rc));
         }
@@ -1132,12 +1120,12 @@ int main(int argc, char **argv) {
     else {
         // enable SSL validation + CApath trust anchors
         show_debug("enabling peers SSL validation");
-        pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_SSL_VALIDATION, 1);
+        pep_rc= pep_setoption(pep,PEP_OPTION_ENDPOINT_SSL_VALIDATION, 1);
         if (pep_rc!=PEP_OK) {
             show_error("failed to enable PEPd SSL validation: %s",pep_strerror(pep_rc));
         }
         show_debug("setting SSL ciphers: 'DEFAULT:-ECDH' (OpenSSL 1.0.0 bug fix)");
-        pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_SSL_CIPHER_LIST, "DEFAULT:-ECDH");
+        pep_rc= pep_setoption(pep,PEP_OPTION_ENDPOINT_SSL_CIPHER_LIST, "DEFAULT:-ECDH");
         if (pep_rc!=PEP_OK) {
             show_error("failed to set SSL ciphers: %s",pep_strerror(pep_rc));
         }
@@ -1145,30 +1133,30 @@ int main(int argc, char **argv) {
 
     if (capath_directory!=NULL) {
         show_debug("setting server trust anchors CA path: %s",capath_directory);
-        pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_SERVER_CAPATH,capath_directory);
+        pep_rc= pep_setoption(pep,PEP_OPTION_ENDPOINT_SERVER_CAPATH,capath_directory);
         if (pep_rc!=PEP_OK) {
             show_error("failed to set server CA path: %s: %s",capath_directory,pep_strerror(pep_rc));
         }
     }
     if (cacert_filename!=NULL) {
         show_debug("setting server trust anchor certificate: %s",cacert_filename);
-        pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_SERVER_CERT,cacert_filename);
+        pep_rc= pep_setoption(pep,PEP_OPTION_ENDPOINT_SERVER_CERT,cacert_filename);
         if (pep_rc!=PEP_OK) {
             show_error("failed to set server cert: %s: %s",cacert_filename,pep_strerror(pep_rc));
         }
     }
     if (cert_filename!=NULL && key_filename!=NULL) {
         show_debug("enabling TLS client authN: %s, %s",cert_filename,key_filename);
-        pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_CLIENT_CERT,cert_filename);
+        pep_rc= pep_setoption(pep,PEP_OPTION_ENDPOINT_CLIENT_CERT,cert_filename);
         if (pep_rc!=PEP_OK) {
             show_error("failed to set client cert: %s: %s",cert_filename,pep_strerror(pep_rc));
         }
-        pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_CLIENT_KEY,key_filename);
+        pep_rc= pep_setoption(pep,PEP_OPTION_ENDPOINT_CLIENT_KEY,key_filename);
         if (pep_rc!=PEP_OK) {
             show_error("failed to set client key: %s: %s",key_filename,pep_strerror(pep_rc));
         }
         if (key_password!=NULL) {
-            pep_rc= pep_setoption(PEP_OPTION_ENDPOINT_CLIENT_KEYPASSWORD,key_password);
+            pep_rc= pep_setoption(pep,PEP_OPTION_ENDPOINT_CLIENT_KEYPASSWORD,key_password);
             if (pep_rc!=PEP_OK) {
                 show_error("failed to set client key password: %s (%s): %s",key_password,key_filename,pep_strerror(pep_rc));
             }
@@ -1197,10 +1185,10 @@ int main(int argc, char **argv) {
     // XXX test PIP and OH
     if (debug && verbose) {
         show_debug("debug is on: enabling PIP and OH profile adapters: %s and %s", authzinterop2gridwn_adapter_pip->id,gridwn2authzinterop_adapter_oh->id);
-        if((pep_rc= pep_addpip(authzinterop2gridwn_adapter_pip)) != PEP_OK) {
+        if((pep_rc= pep_addpip(pep,authzinterop2gridwn_adapter_pip)) != PEP_OK) {
             show_error("failed to enable PIP profile adapter: %s", pep_strerror(pep_rc));
         }
-        if((pep_rc= pep_addobligationhandler(gridwn2authzinterop_adapter_oh)) != PEP_OK) {
+        if((pep_rc= pep_addobligationhandler(pep,gridwn2authzinterop_adapter_oh)) != PEP_OK) {
             show_error("failed to enable OH profile adapter: %s", pep_strerror(pep_rc));
         }
     }
@@ -1208,10 +1196,10 @@ int main(int argc, char **argv) {
     // submit request
     show_info("authorize XACML request");
     xacml_response_t * response= NULL;
-    pep_rc= pep_authorize(&request,&response);
+    pep_rc= pep_authorize(pep,&request,&response);
     if (pep_rc!=PEP_OK) {
         show_error("failed to authorize XACML request: %s",pep_strerror(pep_rc));
-        pep_destroy();
+        pep_destroy(pep);
         exit(E_PEPC);
     }
     if (!quiet) {
@@ -1223,10 +1211,9 @@ int main(int argc, char **argv) {
     }
 
     // clean up
-    pep_destroy();
+    pep_destroy(pep);
     xacml_request_delete(request);
     xacml_response_delete(response);
-    llist_delete(pepds);
     llist_delete(fqans);
     if (certchain!=NULL) free(certchain);
 

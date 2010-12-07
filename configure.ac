@@ -18,7 +18,7 @@
 # $Id: configure.ac 1299 2009-10-15 15:29:34Z vtschopp $
 #
 
-AC_INIT(argus-pep-cli, 1.3.2, argus-support@cern.ch)
+AC_INIT(argus-pep-cli, 2.0.0, argus-support@cern.ch)
 AC_CONFIG_AUX_DIR(project)
 AC_CONFIG_MACRO_DIR(project)
 
@@ -52,27 +52,17 @@ fi
 
 AC_MSG_NOTICE([libdir for $host: $libdir])
 
-# Checks for PEP-C headers and library
+# Checks for PEP client API headers and library
 #
 # use environment variable PKG_CONFIG_PATH=$libdir/pkgconfig
 #
-PKG_CHECK_MODULES(LIBARGUS_PEP_API,[libargus-pep-api >= 1.3.2],
+PKG_CHECK_MODULES(LIBARGUS_PEP_API,[libargus-pep-api >= 2],
     [
         AC_MSG_NOTICE([LIBARGUS_PEP_API_CFLAGS=$LIBARGUS_PEP_API_CFLAGS])
         AC_MSG_NOTICE([LIBARGUS_PEP_API_LIBS=$LIBARGUS_PEP_API_LIBS])
     ],
     [
-        # bootstrap glite.m4 (--with-glite-location=/opt/glite)
-        AC_GLITE
-        CFLAGS="$CFLAGS $GLITE_CFLAGS"
-        AC_MSG_NOTICE([CFLAGS=$CFLAGS])
-        LDFLAGS="$LDFLAGS $GLITE_LDFLAGS"
-        AC_MSG_NOTICE([LDFLAGS=$LDFLAGS])
-        AC_CHECK_HEADER([pep/pep.h],,[AC_MSG_ERROR(Argus PEP client API header pep/pep.h not found)])
-        AC_CHECK_LIB(argus_pep_api,pep_initialize)
-        AC_CHECK_LIB(argus_pep_api,pep_version)
-        # PEP-C lib version >= 1.3 
-        AC_CHECK_LIB(argus_pep_api,xacml_attributeassignment_setvalue)
+        AC_MSG_ERROR([Argus PEP client API (libargus-pep-api >= 2) not available. Check the PKG_CONFIG_PATH variable.])
     ]
 )
 
@@ -86,8 +76,8 @@ AC_C_CONST
 AC_TYPE_SIZE_T
 
 # FUCK!!! int32_t and int64_t macro not available on SLC4
-#AC_TYPE_INT32_T
-#AC_TYPE_INT64_T
+AC_TYPE_INT32_T
+AC_TYPE_INT64_T
 
 # Checks for library and functions.
 AC_FUNC_REALLOC

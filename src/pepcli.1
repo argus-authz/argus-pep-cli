@@ -1,10 +1,10 @@
-.\" Copyright (c) 2009, Members of the EGEE Collaboration.
-.\" PEP-C client CLI: pepcli(1) man page
+.\" Copyright (c) 2009-2010, Members of the EGEE Collaboration.
+.\" PEP CLI: pepcli(1) man page
 .\" Valery Tschopp - SWITCH
 .\" $Id: pepcli.1 1284 2009-09-25 13:27:43Z vtschopp $
 .TH pepcli 1 "May 2009" "EGEE gLite" "ARGUS Authorization Service"
 .SH NAME
-pepcli \- command line interface to the gLite ARGUS Authorization PEP-C client library
+pepcli \- command line interface to the ARGUS Authorization Service
 .SH SYNOPSIS
 \fBpepcli\fR \-\-pepd \fIURL\fR \-\-certchain \fIFILE\fR [options...]
 .PP
@@ -12,7 +12,7 @@ pepcli \- command line interface to the gLite ARGUS Authorization PEP-C client l
 .SH DESCRIPTION
 The 
 .B pepcli
-command is the command line interface to the gLite ARGUS Authorization PEP-C client library. 
+command is the command line interface to the ARGUS Authorization Service. 
 This command allow user to submit a XACML Request to a PEP daemon (PEPd) and to receive the XACML Response back.
 The XACML Response decision and the received Obligations are displayed as result.
 .SH OPTIONS
@@ -22,9 +22,6 @@ Specify the
 .B mandatory
 PEP daemon (PEPd) endpoint 
 .IR URL .
-Add multiple
-.BI "\-\-pepd" " URL"
-options for failover (executed in order).
 .TP
 .BI "\-c" " FILE" ", \-\-certchain" " FILE"
 Set the
@@ -111,7 +108,7 @@ Display a short help text.
 .BR "\-V" , " \-\-version"
 Display the PEP-C CLI and library versions and exit.
 .SH SSL/TLS OPTIONS
-If the connection to the PEP daemon requires HTTPS and/or TLS client authentication, you should specify the following TLS options:
+If the connection to the Argus PEP daemon requires HTTPS and/or TLS client authentication, you must specify the following TLS options:
 .TP
 .BI "\-\-capath" " DIR"
 Set the directory
@@ -203,13 +200,13 @@ The PEP-C client library and the
 .B pepcli
 command are written by Valery Tschopp - SWITCH
 .SH COPYRIGHT
-Copyright \(co 2008-2009 Members of the EGEE Collaboration
+Copyright \(co 2008-2010 Members of the EGEE Collaboration
 .SH SEE ALSO
 .TP 
 .I Argus Authorization Service
 https://twiki.cern.ch/twiki/bin/view/EGEE/AuthorizationFramework
 .TP
-.I Argus PEP-C command line interface 
+.I Argus PEP command line interface 
 https://twiki.cern.ch/twiki/bin/view/EGEE/AuthZPEPCCLI
 .TP
 .I XACML Grid Worker Node Authorization Profile, Version 1.0
