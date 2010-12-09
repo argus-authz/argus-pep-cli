@@ -62,7 +62,7 @@ PKG_CHECK_MODULES(LIBARGUS_PEP_API,[libargus-pep-api >= 2],
         AC_MSG_NOTICE([LIBARGUS_PEP_API_LIBS=$LIBARGUS_PEP_API_LIBS])
     ],
     [
-        AC_MSG_ERROR([Argus PEP client API (libargus-pep-api >= 2) not available. Check the PKG_CONFIG_PATH variable.])
+        AC_MSG_ERROR([Argus PEP client API (libargus-pep-api >= 2) not available. Check the PKG_CONFIG_PATH environment variable.])
     ]
 )
 
@@ -75,16 +75,12 @@ AC_CHECK_HEADERS([string.h stdlib.h stdio.h stdint.h stdarg.h getopt.h pwd.h uni
 AC_C_CONST
 AC_TYPE_SIZE_T
 
-# FUCK!!! int32_t and int64_t macro not available on SLC4
-AC_TYPE_INT32_T
-AC_TYPE_INT64_T
-
 # Checks for library and functions.
 AC_FUNC_REALLOC
 AC_CHECK_FUNCS([strerror strrchr calloc getpass])
 
 # Sets default prefix
-AC_PREFIX_DEFAULT(/opt/glite)
+AC_PREFIX_DEFAULT(/opt/emi)
 
 AC_CONFIG_SRCDIR(src)
 AM_CONFIG_HEADER(src/config.h)
