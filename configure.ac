@@ -56,10 +56,10 @@ AC_MSG_NOTICE([libdir for $host: $libdir])
 #
 # use environment variable PKG_CONFIG_PATH=$libdir/pkgconfig
 #
-PKG_CHECK_MODULES(LIBARGUS_PEP_API,[libargus-pep-api >= 1.3.2],
+PKG_CHECK_MODULES(LIBPEP_C,[libpep-c >= 1.3.2],
     [
-        AC_MSG_NOTICE([LIBARGUS_PEP_API_CFLAGS=$LIBARGUS_PEP_API_CFLAGS])
-        AC_MSG_NOTICE([LIBARGUS_PEP_API_LIBS=$LIBARGUS_PEP_API_LIBS])
+        AC_MSG_NOTICE([LIBPEP_C_CFLAGS=$LIBPEP_C_CFLAGS])
+        AC_MSG_NOTICE([LIBPEP_C_LIBS=$LIBPEP_C_LIBS])
     ],
     [
         # bootstrap glite.m4 (--with-glite-location=/opt/glite)
@@ -69,10 +69,10 @@ PKG_CHECK_MODULES(LIBARGUS_PEP_API,[libargus-pep-api >= 1.3.2],
         LDFLAGS="$LDFLAGS $GLITE_LDFLAGS"
         AC_MSG_NOTICE([LDFLAGS=$LDFLAGS])
         AC_CHECK_HEADER([pep/pep.h],,[AC_MSG_ERROR(Argus PEP client API header pep/pep.h not found)])
-        AC_CHECK_LIB(argus_pep_api,pep_initialize)
-        AC_CHECK_LIB(argus_pep_api,pep_version)
+        AC_CHECK_LIB(pep-c,pep_initialize)
+        AC_CHECK_LIB(pep-c,pep_version)
         # PEP-C lib version >= 1.3 
-        AC_CHECK_LIB(argus_pep_api,xacml_attributeassignment_setvalue)
+        AC_CHECK_LIB(pep-c,xacml_attributeassignment_setvalue)
     ]
 )
 
