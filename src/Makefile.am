@@ -37,4 +37,4 @@ pepcli_LDADD = \
     $(LIBPEP_C_LIBS)
 
 # man page
-man1_MANS = pepcli.1
+#man1_MANS = pepcli.1

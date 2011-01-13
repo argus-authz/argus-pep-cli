@@ -27,3 +27,5 @@ doc_DATA = AUTHORS CHANGELOG LICENSE
 doxygen: doc/Doxyfile
 	$(DOXYGEN) doc/Doxyfile
 
+mandir = $(datadir)/man
+man1_MANS = src/pepcli.1
