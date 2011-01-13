@@ -37,4 +37,5 @@ pepcli_LDADD = \
     $(LIBARGUS_PEP_API_LIBS)
 
 # man page
+mandir = $(datadir)/man
 man1_MANS = pepcli.1
