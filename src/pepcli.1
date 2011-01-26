@@ -1,10 +1,10 @@
 .\" Copyright (c) 2009-2010, Members of the EGEE Collaboration.
-.\" PEP CLI: pepcli(1) man page
+.\" Argus PEP CLI: pepcli(1) man page
 .\" Valery Tschopp - SWITCH
 .\" $Id: pepcli.1 1284 2009-09-25 13:27:43Z vtschopp $
-.TH pepcli 1 "May 2009" "EGEE gLite" "ARGUS Authorization Service"
+.TH pepcli 1 "May 2009" "EMI" "Argus Authorization Service"
 .SH NAME
-pepcli \- command line interface to the ARGUS Authorization Service
+pepcli \- command line interface to the Argus Authorization Service
 .SH SYNOPSIS
 \fBpepcli\fR \-\-pepd \fIURL\fR \-\-certchain \fIFILE\fR [options...]
 .PP
@@ -180,7 +180,7 @@ argument does not exist or does not contain a valid PEM encoded certificate (mis
 XACML object creation error.
 .TP
 .B 5
-Other PEP-C client library error, see output for more information.
+Other Argus PEP client library error, see output for more information.
 .TP
 .B 6
 TLS CA path directory error.
@@ -196,7 +196,7 @@ TLS server CA certificate file error.
 .SH EXAMPLE
 pepcli \-\-pepd http://pepd.example.org:8154/authz \-\-certchain ~/.globus/usercert.pem \-\-resourceid x\-urn:example.org:gridftp \-\-actionid x\-urn:example.org:authz
 .SH AUTHORS
-The PEP-C client library and the 
+The Argus PEP client library and the 
 .B pepcli
 command are written by Valery Tschopp - SWITCH
 .SH COPYRIGHT

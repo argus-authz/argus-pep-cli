@@ -56,13 +56,13 @@ AC_MSG_NOTICE([libdir for $host: $libdir])
 #
 # use environment variable PKG_CONFIG_PATH=$libdir/pkgconfig
 #
-PKG_CHECK_MODULES(LIBARGUS_PEP_API,[libargus-pep-api >= 2],
+PKG_CHECK_MODULES(LIBARGUS_PEP,[libargus-pep >= 2],
     [
-        AC_MSG_NOTICE([LIBARGUS_PEP_API_CFLAGS=$LIBARGUS_PEP_API_CFLAGS])
-        AC_MSG_NOTICE([LIBARGUS_PEP_API_LIBS=$LIBARGUS_PEP_API_LIBS])
+        AC_MSG_NOTICE([LIBARGUS_PEP_CFLAGS=$LIBARGUS_PEP_CFLAGS])
+        AC_MSG_NOTICE([LIBARGUS_PEP_LIBS=$LIBARGUS_PEP_LIBS])
     ],
     [
-        AC_MSG_ERROR([Argus PEP client API (libargus-pep-api >= 2) not available. Check the PKG_CONFIG_PATH environment variable.])
+        AC_MSG_ERROR([Argus PEP client API (libargus-pep >= 2) not available. Check the PKG_CONFIG_PATH environment variable.])
     ]
 )
 
@@ -80,7 +80,7 @@ AC_FUNC_REALLOC
 AC_CHECK_FUNCS([strerror strrchr calloc getpass])
 
 # Sets default prefix
-AC_PREFIX_DEFAULT(/opt/emi)
+#AC_PREFIX_DEFAULT(/opt/emi)
 
 AC_CONFIG_SRCDIR(src)
 AM_CONFIG_HEADER(src/config.h)

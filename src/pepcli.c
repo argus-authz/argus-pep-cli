@@ -34,7 +34,7 @@
 #define PACKAGE_NAME "pepcli"
 #endif
 
-#include "pep/pep.h"
+#include "argus/pep.h"
 #include "util/buffer.h"
 #include "util/linkedlist.h"
 
