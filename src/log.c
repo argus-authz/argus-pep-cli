@@ -87,30 +87,30 @@ void show_debug(const char * format, ...) {
 }
 
 /*
- * PEP-C library logging callback function
+ * Argus PEP client library logging callback function
  */
 void log_handler_pep(int level, const char * format, va_list args) {
     if (verbose || debug) {
         switch (level) {
         case 0:
-            fprintf(stderr,"libargus_pep_api:ERROR: ");
+            fprintf(stderr,"libargus_pep:ERROR: ");
             vfprintf(stderr,format,args);
             fprintf(stderr,"\n");
             break;
         case 1:
-            fprintf(stderr,"libargus_pep_api:WARN: ");
+            fprintf(stderr,"libargus_pep:WARN: ");
             vfprintf(stderr,format,args);
             fprintf(stderr,"\n");
             break;
         case 2:
-            fprintf(stderr,"libargus_pep_api: ");
+            fprintf(stderr,"libargus_pep: ");
             vfprintf(stderr,format,args);
             fprintf(stderr,"\n");
             break;
         default:
             // all other message are debug!?!
             if (debug) {
-                fprintf(stderr,"libargus_pep_api:DEBUG: ");
+                fprintf(stderr,"libargus_pep:DEBUG: ");
                 vfprintf(stderr,format,args);
                 fprintf(stderr,"\n");
             }
