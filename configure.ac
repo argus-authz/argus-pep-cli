@@ -18,7 +18,7 @@
 # $Id: configure.ac 1299 2009-10-15 15:29:34Z vtschopp $
 #
 
-AC_INIT(argus-pep-cli, 1.3.2, argus-support@cern.ch)
+AC_INIT(argus-pepcli, 1.3.2, argus-support@cern.ch)
 AC_CONFIG_AUX_DIR(project)
 AC_CONFIG_MACRO_DIR(project)
 
@@ -78,6 +78,7 @@ PKG_CHECK_MODULES(LIBPEP_C,[libpep-c >= 1.3.2],
 
 
 # Checks for header files.
+AC_CHECK_HEADERS([pep/pep.h])
 AC_HEADER_STDC
 AC_CHECK_HEADERS([string.h stdlib.h stdio.h stdint.h stdarg.h getopt.h pwd.h unistd.h])
 
