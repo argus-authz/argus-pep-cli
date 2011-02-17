@@ -1088,8 +1088,12 @@ int main(int argc, char **argv) {
     if (debug) {
         pep_setoption(pep,PEP_OPTION_LOG_LEVEL,PEP_LOGLEVEL_DEBUG);
     }
-    else if (verbose && !quiet) {
+    else if (verbose) {
         pep_setoption(pep,PEP_OPTION_LOG_LEVEL,PEP_LOGLEVEL_INFO);
+    }
+    else if (!quiet) {
+        // by default shown only error
+        pep_setoption(pep,PEP_OPTION_LOG_LEVEL,PEP_LOGLEVEL_ERROR);
     }
     // endpoint urls
     show_debug("set PEPd url: %s",pepd_url);
