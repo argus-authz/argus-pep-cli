@@ -1,6 +1,7 @@
 argus-pepcli 2.0.0 (EMI)
 ------------------
 * linked with new thread-safe Argus PEP client library argus-pep-api-c 2.0.
+* underlying error (libargus-pep) are displayed by default.
 
 PEP-C-CLI 1.3.1
 ---------------
