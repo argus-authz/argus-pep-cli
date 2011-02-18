@@ -194,13 +194,13 @@ TLS client private key file or password error.
 .B 9
 TLS server CA certificate file error.
 .SH EXAMPLE
-pepcli \-\-pepd http://pepd.example.org:8154/authz \-\-certchain ~/.globus/usercert.pem \-\-resourceid x\-urn:example.org:gridftp \-\-actionid x\-urn:example.org:authz
+pepcli \-\-pepd https://pepd.example.org:8154/authz \-\-capath /etc/grid-security/certificates \-\-cert /etc/grid-security/hostcert.pem \-\-key /etc/grid-security/hostkey.pem \-\-certchain ~/.globus/usercert.pem \-\-resourceid x\-urn:example.org:gridftp \-\-actionid x\-urn:example.org:authz
 .SH AUTHORS
 The Argus PEP client library and the 
 .B pepcli
 command are written by Valery Tschopp - SWITCH
 .SH COPYRIGHT
-Copyright \(co 2008-2010 Members of the EGEE Collaboration
+Copyright \(co 2008-2011 Members of the EGEE Collaboration
 .SH SEE ALSO
 .TP 
 .I Argus Authorization Service
