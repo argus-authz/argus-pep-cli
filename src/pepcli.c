@@ -545,7 +545,7 @@ static const char * decision_str(int decision) {
         return "Not Applicable";
         break;
     default:
-        return "Deny (Unknown!?!)";
+        return "Unknown!?!";
         break;
     }
 }
@@ -1086,13 +1086,16 @@ int main(int argc, char **argv) {
     // verbose and debug
     pep_setoption(pep,PEP_OPTION_LOG_HANDLER,log_handler_pep);
     if (debug) {
+        show_debug("set PEP_OPTION_LOG_LEVEL: PEP_LOGLEVEL_DEBUG");
         pep_setoption(pep,PEP_OPTION_LOG_LEVEL,PEP_LOGLEVEL_DEBUG);
     }
     else if (verbose) {
+        show_debug("set PEP_OPTION_LOG_LEVEL: PEP_LOGLEVEL_INFO");
         pep_setoption(pep,PEP_OPTION_LOG_LEVEL,PEP_LOGLEVEL_INFO);
     }
     else if (!quiet) {
         // by default shown only error
+        show_debug("set PEP_OPTION_LOG_LEVEL: PEP_LOGLEVEL_ERROR");
         pep_setoption(pep,PEP_OPTION_LOG_LEVEL,PEP_LOGLEVEL_ERROR);
     }
     // endpoint urls

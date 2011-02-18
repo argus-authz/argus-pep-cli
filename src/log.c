@@ -90,27 +90,27 @@ void show_debug(const char * format, ...) {
  * Argus PEP client library logging callback function
  */
 void log_handler_pep(int level, const char * format, va_list args) {
-    if (verbose || debug) {
+    if (verbose || debug || !quiet) {
         switch (level) {
         case 0:
-            fprintf(stderr,"libargus_pep:ERROR: ");
+            fprintf(stderr,"libargus-pep:ERROR: ");
             vfprintf(stderr,format,args);
             fprintf(stderr,"\n");
             break;
         case 1:
-            fprintf(stderr,"libargus_pep:WARN: ");
+            fprintf(stderr,"libargus-pep:WARN: ");
             vfprintf(stderr,format,args);
             fprintf(stderr,"\n");
             break;
         case 2:
-            fprintf(stderr,"libargus_pep: ");
+            fprintf(stderr,"libargus-pep: ");
             vfprintf(stderr,format,args);
             fprintf(stderr,"\n");
             break;
         default:
             // all other message are debug!?!
             if (debug) {
-                fprintf(stderr,"libargus_pep:DEBUG: ");
+                fprintf(stderr,"libargus-pep:DEBUG: ");
                 vfprintf(stderr,format,args);
                 fprintf(stderr,"\n");
             }
