@@ -1,3 +1,7 @@
+argus-pepcli 2.0.0 (EMI)
+------------------
+* linked with new thread-safe Argus PEP client library argus-pep-api-c 2.0.
+
 PEP-C-CLI 1.3.1
 ---------------
 * pep/buffer.h and pep/linkedlist.h are not distrubuted anymore with the libpep-c, copy in util.
