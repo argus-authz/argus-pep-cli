@@ -20,8 +20,8 @@
 SUBDIRS = src 
 EXTRA_DIST = LICENSE CHANGELOG autotools.sh 
 
-docdir = $(datadir)/doc/$(PACKAGE)
-doc_DATA = AUTHORS CHANGELOG LICENSE
+docdir = $(datadir)/doc/$(PACKAGE_NAME)-$(PACKAGE_VERSION)
+doc_DATA = AUTHORS CHANGELOG LICENSE COPYRIGHT
 
 # Generate doxygen doc
 doxygen: doc/Doxyfile
