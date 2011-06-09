@@ -2,28 +2,28 @@
 .\" Argus PEP CLI: pepcli(1) man page
 .\" Valery Tschopp - SWITCH
 .\" $Id: pepcli.1 1284 2009-09-25 13:27:43Z vtschopp $
-.TH pepcli 1 "May 2009" "EMI" "Argus Authorization Service"
+.TH pepcli 1 "June 2011" "EMI" "Argus Authorization Service"
 .SH NAME
 pepcli \- command line interface to the Argus Authorization Service
 .SH SYNOPSIS
-\fBpepcli\fR \-\-pepd \fIURL\fR \-\-certchain \fIFILE\fR [options...]
+\fBpepcli\fR \-\-pepd \fIURL\fR \-\-keyinfo \fIFILE\fR [options...]
 .PP
 \fBpepcli\fR \-\-pepd \fIURL\fR \-\-subjectid \fIID\fR [options...]
 .SH DESCRIPTION
 The 
 .B pepcli
 command is the command line interface to the ARGUS Authorization Service. 
-This command allow user to submit a XACML Request to a PEP daemon (PEPd) and to receive the XACML Response back.
+This command allow user to submit a XACML Request to an Argus PEP Server endpoint URL and to receive the XACML Response back.
 The XACML Response decision and the received Obligations are displayed as result.
 .SH OPTIONS
 .TP
 .BI "\-p" " URL" ", \-\-pepd" " URL"
 Specify the 
 .B mandatory
-PEP daemon (PEPd) endpoint 
+PEP Server endpoint 
 .IR URL .
 .TP
-.BI "\-c" " FILE" ", \-\-certchain" " FILE"
+.BI "\-k" " FILE" ", \-\-keyinfo" " FILE"
 Set the
 .B mandatory
 , and mutually exclusive with the \-\-subjectid option,  XACML Subject attribute identifier
@@ -37,7 +37,7 @@ contains a PEM encoded user certificate (X509) or proxy certificate.
 .BI "\-s" " ID" ", \-\-subjectid" " ID"
 Set the
 .B mandatory
-, and mutually exclusive with the \-\-certchain option, 
+, and mutually exclusive with the \-\-keyinfo option, 
 XACML Subject attribute identifier
 .B subject\-id
 with the value set as the
@@ -145,13 +145,13 @@ and uses the identifiers described in this profile.
 Using the
 .B pepcli
 command both with the
-.BI "\-\-certchain" " PROXY_FILE"
+.BI "\-\-keyinfo" " PROXY_FILE"
 and the
 .BI "\-\-fqan" " FQAN"
 options can give indeterminate results if the argument
 .I PROXY_FILE
 is a proxy certificate with VOMS AC. 
-The PEP daemon X.509 PIP will populate the incoming XACML Request with the proxy certificate VOMS AC into XACML Subject
+The PEP Server X.509 PIP will populate the incoming XACML Request with the proxy certificate VOMS AC into XACML Subject
 .BR "fqan/primary" " and" " fqan" 
 attributes, therefore, these attributes will be duplicated, resulting in possible inconsistency.
 .SH EXIT STATUS
@@ -173,7 +173,7 @@ Invalid command option.
 .TP
 .B 3
 The
-.BI "\-\-certchain" " FILE"
+.BI "\-\-keyinfo" " FILE"
 argument does not exist or does not contain a valid PEM encoded certificate (missing certificate block).
 .TP
 .B 4
@@ -194,7 +194,7 @@ TLS client private key file or password error.
 .B 9
 TLS server CA certificate file error.
 .SH EXAMPLE
-pepcli \-\-pepd https://pepd.example.org:8154/authz \-\-capath /etc/grid-security/certificates \-\-cert /etc/grid-security/hostcert.pem \-\-key /etc/grid-security/hostkey.pem \-\-certchain ~/.globus/usercert.pem \-\-resourceid x\-urn:example.org:gridftp \-\-actionid x\-urn:example.org:authz
+pepcli \-\-pepd https://pepd.example.org:8154/authz \-\-capath /etc/grid-security/certificates \-\-cert /etc/grid-security/hostcert.pem \-\-key /etc/grid-security/hostkey.pem \-\-keyinfo /tmp/x509up_u500 \-\-resourceid x\-urn:example.org:gridftp \-\-actionid x\-urn:example.org:authz
 .SH AUTHORS
 The Argus PEP client library and the 
 .B pepcli
