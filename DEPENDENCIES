@@ -1,5 +1,5 @@
-Argus PEP client library dependencies
--------------------------------------
-* libcurl (openssl/nss)
+Argus PEP CLI (pepcli) dependencies
+-----------------------------------
+* argus-pep-api-c library
 --
 $Id: DEPENDENCIES 1194 2009-06-19 12:54:48Z vtschopp $

@@ -1,8 +1,8 @@
-PEP-C CLI (pepcli)
-------------------
-0. Requirements:
+Argus PEP CLI (pepcli)
+----------------------
+0. Build requirements:
 
-- The PEP-C library must be installed
+- The Argus PEP client library and development package must be installed (argus-pep-api-c-devel)
 
 1. First you have to bootstrap the autotools:
 
