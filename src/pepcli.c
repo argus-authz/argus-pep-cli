@@ -60,9 +60,10 @@ void log_handler_pep(int level, const char * format, va_list args);
 
 // program options
 static struct option long_options[] = {
-   // PEPd endpoint URL
+   // PEP server endpoint URL
    {"pepd", required_argument, 0, 'p'},
    {"certchain", required_argument, 0, 'c'},
+   {"keyinfo", required_argument, 0, 'k'},
    {"subjectid", required_argument, 0, 's'},
    {"fqan",  required_argument,  0, 'f'},
    {"resourceid", required_argument, 0, 'r'},
@@ -807,19 +808,19 @@ static void show_version() {
 static void show_help() {
     show_version();
     fprintf(stdout,"Usage:\n");
-    fprintf(stdout,"    pepcli --pepd <URL> --certchain <FILE> [options...]\n");
+    fprintf(stdout,"    pepcli --pepd <URL> --keyinfo <FILE> [options...]\n");
     fprintf(stdout,"    pepcli --pepd <URL> --subjectid <DN> [options...]\n");
     fprintf(stdout,"\n");
-    fprintf(stdout,"Submit a XACML Request to the PEPd and show the XACML Response.\n");
+    fprintf(stdout,"Submit a XACML Request to the PEP Server and show the XACML Response.\n");
     fprintf(stdout,"\n");
     fprintf(stdout,"Options:\n");
     fprintf(stdout," -p|--pepd <URL>         Argus PEP server endpoint URL.\n");
-    fprintf(stdout," -c|--certchain <FILE>   XACML Subject cert-chain: proxy or X509 file.\n");
-    fprintf(stdout," -s|--subjectid <DN>     XACML Subject identifier: user DN (format RFC2253).\n");
+    fprintf(stdout," -k|--keyinfo <FILE>     XACML Subject key-info: proxy or X509 file.\n");
+    fprintf(stdout," -s|--subjectid <DN>     XACML Subject subject-id: user DN (format RFC2253).\n");
     fprintf(stdout," -f|--fqan <FQAN>        XACML Subject primary FQAN and FQANs\n");
     fprintf(stdout,"                         Add multiple --fqan options for secondary FQANs.\n");
-    fprintf(stdout," -r|--resourceid <URI>   XACML Resource identifier.\n");
-    fprintf(stdout," -a|--actionid <URI>     XACML Action identifier.\n");
+    fprintf(stdout," -r|--resourceid <URI>   XACML Resource resource-id.\n");
+    fprintf(stdout," -a|--actionid <URI>     XACML Action action-id.\n");
     fprintf(stdout," -t|--timeout <SEC>      Connection timeout in second (default 30s).\n");
     fprintf(stdout," -x|--requestcontext     Show effective XACML Request context.\n");
     fprintf(stdout," -v|--verbose            Verbose.\n");
@@ -850,7 +851,7 @@ int main(int argc, char **argv) {
     }
     // parse arguments
     int c;
-    while ((c= getopt_long(argc, argv, "dqvp:s:t:r:a:c:f:xhV1:2:3:4:5:", long_options, NULL)) != -1) {
+    while ((c= getopt_long(argc, argv, "dqvp:s:t:r:a:k:c:f:xhV1:2:3:4:5:", long_options, NULL)) != -1) {
         switch(c) {
         case 'd':
             debug= 1;
@@ -889,6 +890,12 @@ int main(int argc, char **argv) {
             break;
         case 'c':
             show_debug("certchain: %s",optarg);
+            if (strlen(optarg) > 0) {
+                certchain_filename= optarg;
+            }
+            break;
+        case 'k':
+            show_debug("keyinfo: %s",optarg);
             if (strlen(optarg) > 0) {
                 certchain_filename= optarg;
             }
@@ -967,13 +974,13 @@ int main(int argc, char **argv) {
         exit(E_OPTION);
     }
     if (certchain_filename==NULL && subjectid==NULL) {
-        show_error("one of the mandatory option -c|--certchain <FILE> or -s|--subjectid <DN> is missing");
+        show_error("one of the mandatory option -k|--keyinfo <FILE> or -s|--subjectid <DN> is missing");
         //show_help();
         exit(E_OPTION);        
     }
     // mutually exclusive
     if (certchain_filename!=NULL && subjectid!=NULL) {
-        show_error("the mandatory options -c|--certchain <FILE> or -s|--subjectid <DN> are mutually exclusive");
+        show_error("the mandatory options -k|--keyinfo <FILE> or -s|--subjectid <DN> are mutually exclusive");
         //show_help();
         exit(E_OPTION);        
     }
@@ -990,7 +997,7 @@ int main(int argc, char **argv) {
 
     // check files options (exists and readable)
     if (certchain_filename!=NULL && !file_is_readable(certchain_filename)) {
-        show_error("the -c|--certchain %s does not exist or is not readable",certchain_filename);
+        show_error("the -k|--keyinfo %s does not exist or is not readable",certchain_filename);
         exit(E_CERTCHAIN);
     }
     if (cacert_filename!=NULL && !file_is_readable(cacert_filename)) {
@@ -1028,7 +1035,7 @@ int main(int argc, char **argv) {
         show_info("subjectid: %s", subjectid);
     }
     if (certchain_filename!=NULL) {
-        show_info("certchain: %s", certchain_filename);
+        show_info("keyinfo: %s", certchain_filename);
     }
     if (resourceid!=NULL) {
         show_info("resourceid: %s", resourceid);
@@ -1064,13 +1071,13 @@ int main(int argc, char **argv) {
 
     // read certchain file
     if (certchain_filename!=NULL) {
-        show_debug("read certchain from: %s",certchain_filename);
+        show_debug("read keyinfo from: %s",certchain_filename);
         certchain= read_certchain(certchain_filename);
         if (certchain==NULL) {
-            show_error("certchain %s not found or doesn't contain certificate",certchain_filename);
+            show_error("keyinfo %s not found or doesn't contain certificate",certchain_filename);
             exit(E_CERTCHAIN);
         }
-        show_debug("certchain:[\n%s]", certchain);
+        show_debug("keyinfo:[\n%s]", certchain);
     }
 
     // PEP client
@@ -1099,45 +1106,49 @@ int main(int argc, char **argv) {
         pep_setoption(pep,PEP_OPTION_LOG_LEVEL,PEP_LOGLEVEL_ERROR);
     }
     // endpoint urls
-    show_debug("set PEPd url: %s",pepd_url);
+    show_debug("set PEP server endpoint url: %s",pepd_url);
     pep_error_t pep_rc= pep_setoption(pep,PEP_OPTION_ENDPOINT_URL,pepd_url);
     if (pep_rc!=PEP_OK) {
-        show_error("failed to set PEPd url: %s: %s",pepd_url,pep_strerror(pep_rc));
+        show_error("failed to set PEP server endpoint url: %s: %s",pepd_url,pep_strerror(pep_rc));
         pep_destroy(pep);
         exit(E_PEPC);
     }
     // connection timeout
     if (timeout>0) {
-        show_debug("set PEP-C client timeout: %d",timeout);
+        show_debug("set PEP client timeout: %d",timeout);
         pep_rc= pep_setoption(pep,PEP_OPTION_ENDPOINT_TIMEOUT, timeout);
         if (pep_rc!=PEP_OK) {
             show_warn("failed to set PEP client timeout: %d: %s",timeout,pep_strerror(pep_rc));
         }
     }
 
+/*
     // TLS/SSL trust anchors and client authentication
     if (capath_directory==NULL && cacert_filename==NULL) {
         // no SSL validation
-        show_debug("no CA cert or path: PEPd SSL validation disabled");
+        show_debug("no CA cert or path: PEP server SSL validation disabled");
         pep_rc= pep_setoption(pep,PEP_OPTION_ENDPOINT_SSL_VALIDATION, 0);
         if (pep_rc!=PEP_OK) {
-            show_warn("failed to disable PEPd SSL validation: %s",pep_strerror(pep_rc));
+            show_warn("failed to disable PEP server SSL validation: %s",pep_strerror(pep_rc));
         }
     }
     else {
+*/
         // enable SSL validation + CApath trust anchors
         show_debug("enabling peers SSL validation");
         pep_rc= pep_setoption(pep,PEP_OPTION_ENDPOINT_SSL_VALIDATION, 1);
         if (pep_rc!=PEP_OK) {
-            show_error("failed to enable PEPd SSL validation: %s",pep_strerror(pep_rc));
+            show_error("failed to enable peers SSL validation: %s",pep_strerror(pep_rc));
         }
-        show_debug("setting SSL ciphers: 'DEFAULT:-ECDH' (OpenSSL 1.0.0 bug fix)");
-        pep_rc= pep_setoption(pep,PEP_OPTION_ENDPOINT_SSL_CIPHER_LIST, "DEFAULT:-ECDH");
-        if (pep_rc!=PEP_OK) {
-            show_error("failed to set SSL ciphers: %s",pep_strerror(pep_rc));
-        }
+/*
+// moved to argus-pep-api-c 
+//        show_debug("setting SSL ciphers: 'DEFAULT:-ECDH' (OpenSSL 1.0.0 bug fix)");
+//        pep_rc= pep_setoption(pep,PEP_OPTION_ENDPOINT_SSL_CIPHER_LIST, "DEFAULT:-ECDH");
+//        if (pep_rc!=PEP_OK) {
+//            show_error("failed to set SSL ciphers: %s",pep_strerror(pep_rc));
+//        }
     }
-
+*/
     if (capath_directory!=NULL) {
         show_debug("setting server trust anchors CA path: %s",capath_directory);
         pep_rc= pep_setoption(pep,PEP_OPTION_ENDPOINT_SERVER_CAPATH,capath_directory);
