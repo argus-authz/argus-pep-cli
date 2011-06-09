@@ -20,8 +20,13 @@ The XACML Response decision and the received Obligations are displayed as result
 .BI "\-p" " URL" ", \-\-pepd" " URL"
 Specify the 
 .B mandatory
-PEP Server endpoint 
+Argus PEP Server endpoint 
 .IR URL .
+See 
+.B SSL/TLS OPTIONS
+if the URL uses the  
+.B HTTPS 
+secure protocol.
 .TP
 .BI "\-k" " FILE" ", \-\-keyinfo" " FILE"
 Set the
@@ -106,9 +111,9 @@ Display debug information.
 Display a short help text.
 .TP
 .BR "\-V" , " \-\-version"
-Display the PEP-C CLI and library versions and exit.
+Shows the pepcli version and exit.
 .SH SSL/TLS OPTIONS
-If the connection to the Argus PEP daemon requires HTTPS and/or TLS client authentication, you must specify the following TLS options:
+Normally the connection to the Argus PEP Server requires HTTPS and TLS client authentication, therefore, you must specify the following TLS options:
 .TP
 .BI "\-\-capath" " DIR"
 Set the directory
@@ -118,7 +123,7 @@ containing the server trusted CA certificates (CA bundle), typically the
 directory.
 .TP
 .BI "\-\-cacert" " FILE"
-Set the server PEM encoded
+Optionally, set the server PEM encoded
 .I FILE
 containing the trusted CA certificate.
 .TP
