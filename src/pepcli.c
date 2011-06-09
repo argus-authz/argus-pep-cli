@@ -1201,15 +1201,15 @@ int main(int argc, char **argv) {
     }
 
     // XXX test PIP and OH
-    if (debug && verbose) {
-        show_debug("debug is on: enabling PIP and OH profile adapters: %s and %s", authzinterop2gridwn_adapter_pip->id,gridwn2authzinterop_adapter_oh->id);
-        if((pep_rc= pep_addpip(pep,authzinterop2gridwn_adapter_pip)) != PEP_OK) {
-            show_error("failed to enable PIP profile adapter: %s", pep_strerror(pep_rc));
-        }
-        if((pep_rc= pep_addobligationhandler(pep,gridwn2authzinterop_adapter_oh)) != PEP_OK) {
-            show_error("failed to enable OH profile adapter: %s", pep_strerror(pep_rc));
-        }
-    }
+//    if (debug && verbose) {
+//        show_debug("debug is on: enabling PIP and OH profile adapters: %s and %s", authzinterop2gridwn_adapter_pip->id,gridwn2authzinterop_adapter_oh->id);
+//        if((pep_rc= pep_addpip(pep,authzinterop2gridwn_adapter_pip)) != PEP_OK) {
+//            show_error("failed to enable PIP profile adapter: %s", pep_strerror(pep_rc));
+//       }
+//      if((pep_rc= pep_addobligationhandler(pep,gridwn2authzinterop_adapter_oh)) != PEP_OK) {
+//            show_error("failed to enable OH profile adapter: %s", pep_strerror(pep_rc));
+//        }
+//    }
 
     // submit request
     show_info("authorize XACML request");
