@@ -18,9 +18,9 @@
 # $Id: configure.ac 1299 2009-10-15 15:29:34Z vtschopp $
 #
 
-AC_INIT(argus-pepcli, 2.0.0, argus-support@cern.ch)
-AC_CONFIG_AUX_DIR(project)
-AC_CONFIG_MACRO_DIR(project)
+AC_INIT([argus-pepcli], [2.1.0], [argus-support@cern.ch])
+AC_CONFIG_AUX_DIR([project])
+AC_CONFIG_MACRO_DIR([project])
 
 # OSX requires ./configure --disable-dependency-tracking to compile, others don't care
 AM_INIT_AUTOMAKE([no-dependencies])
@@ -35,7 +35,7 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 
 # Check for doxygen
-AC_CHECK_PROG(DOXYGEN,doxygen,doxygen,$ac_aux_dir/missing --run doxygen)
+AC_CHECK_PROG(DOXYGEN,[doxygen],[doxygen],[$ac_aux_dir/missing --run doxygen])
 AC_SUBST(DOXYGEN)
 
 # GCC CFLAGS
@@ -57,14 +57,9 @@ AC_MSG_NOTICE([libdir for $host: $libdir])
 # use environment variable PKG_CONFIG_PATH=$libdir/pkgconfig
 #
 PKG_CHECK_MODULES(LIBARGUS_PEP,[libargus-pep >= 2],
-    [
-        AC_MSG_NOTICE([LIBARGUS_PEP_CFLAGS=$LIBARGUS_PEP_CFLAGS])
-        AC_MSG_NOTICE([LIBARGUS_PEP_LIBS=$LIBARGUS_PEP_LIBS])
-    ],
-    [
-        AC_MSG_ERROR([Argus PEP client API (libargus-pep >= 2) not available. Check the PKG_CONFIG_PATH environment variable.])
-    ]
-)
+    [AC_MSG_NOTICE([LIBARGUS_PEP_CFLAGS=$LIBARGUS_PEP_CFLAGS])
+     AC_MSG_NOTICE([LIBARGUS_PEP_LIBS=$LIBARGUS_PEP_LIBS])],
+    [AC_MSG_ERROR([Argus PEP client API (libargus-pep >= 2) not available. Check the PKG_CONFIG_PATH environment variable.])])
 
 
 # Checks for header files.
@@ -82,8 +77,8 @@ AC_CHECK_FUNCS([strerror strrchr calloc getpass])
 # Sets default prefix
 #AC_PREFIX_DEFAULT(/opt/emi)
 
-AC_CONFIG_SRCDIR(src)
-AM_CONFIG_HEADER(src/config.h)
+AC_CONFIG_SRCDIR([src])
+AM_CONFIG_HEADER([src/config.h])
 
 AC_CONFIG_FILES([
 Makefile
