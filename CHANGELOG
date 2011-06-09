@@ -1,3 +1,9 @@
+argus-pepcli 2.1.0 (EMI)
+------------------
+* TODO: profile!!!!!!
+* new --keyinfo <CERT_FILE> param replaces --certchain <CERT_FILE> parameter.
+* peers SSL validation enabled by default.
+
 argus-pepcli 2.0.0 (EMI)
 ------------------
 * linked with new thread-safe Argus PEP client library argus-pep-api-c 2.0.
