@@ -1,5 +1,5 @@
-PEP-C client library dependencies
----------------------------------
-* libcurl (openssl)
+Argus PEP client library dependencies
+-------------------------------------
+* libcurl (openssl/nss)
 --
 $Id: DEPENDENCIES 1194 2009-06-19 12:54:48Z vtschopp $

@@ -8,7 +8,7 @@ PEP-C CLI (pepcli)
 
 ./autotools.sh
 
-2. Then use configure (default prefix: /opt/glite):
+2. Then use configure (default prefix: /usr/local):
 
 ./configure 
 
