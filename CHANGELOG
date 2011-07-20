@@ -3,6 +3,7 @@ argus-pepcli 2.1.0 (EMI)
 * TODO: profile!!!!!!
 * new --keyinfo <CERT_FILE> param replaces --certchain <CERT_FILE> parameter.
 * peers SSL validation enabled by default.
+* OpenSSL 1.0 cipher list bug fix moved to emi-argus-pep-api-c library.
 
 argus-pepcli 2.0.0 (EMI)
 ------------------
