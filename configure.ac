@@ -56,6 +56,7 @@ AC_MSG_NOTICE([libdir for $host: $libdir])
 #
 # use environment variable PKG_CONFIG_PATH=$libdir/pkgconfig
 #
+AC_MSG_NOTICE([PKG_CONFIG_PATH=$PKG_CONFIG_PATH])
 PKG_CHECK_MODULES(LIBARGUS_PEP,[libargus-pep >= 2],
     [
         AC_MSG_NOTICE([LIBARGUS_PEP_CFLAGS=$LIBARGUS_PEP_CFLAGS])
