@@ -17,9 +17,6 @@
 # $Id: Makefile.am 1299 2009-10-15 15:29:34Z vtschopp $
 #
 
-SUBDIRS = util
-AM_CPPFLAGS = -I$(top_srcdir)/src/util
-
 #
 # PEP-C client CLI exec
 #
