@@ -24,7 +24,9 @@ bin_PROGRAMS = pepcli
 
 pepcli_SOURCES = \
     pepcli.c \
-    log.c
+    log.c \
+    buffer.h \
+    linkedlist.h
 
 pepcli_CFLAGS = \
     $(LIBARGUS_PEP_CFLAGS)
@@ -33,6 +35,8 @@ pepcli_CFLAGS = \
 
 pepcli_LDADD = \
     $(LIBARGUS_PEP_LIBS)
+
+EXTRA_DIST = pepcli.1
 
 # man page
 mandir = $(datadir)/man
