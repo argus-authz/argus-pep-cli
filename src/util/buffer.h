@@ -41,9 +41,9 @@ extern "C" {
 
 
 /**
- * The BUFFER type.
+ * The ADT BUFFER type.
  */
-typedef struct buffer BUFFER;
+typedef struct pep_buffer pep_buffer_t;
 
 /**
  * Creates a buffer with the given initial size.
@@ -53,25 +53,25 @@ typedef struct buffer BUFFER;
  *
  * @return a pointer to the new buffer or NULL if an error occurs.
  */
-BUFFER * buffer_create(size_t size);
+pep_buffer_t * pep_buffer_create(size_t size);
 
 /**
  * Delete the buffer.
  *
- * @param BUFFER * buffer pointer to the buffer.
+ * @param pep_buffer_t * buffer pointer to the buffer.
  */
-void buffer_delete(BUFFER * buffer);
+void pep_buffer_delete(pep_buffer_t * buffer);
 
 /**
  * Writes the buffer to an output stream.
  *
- * @param BUFFER * buffer pointer to the buffer.
+ * @param pep_buffer_t * buffer pointer to the buffer.
  * @param FILE * ostream pointer to the output stream.
  *
  * @return size_t number of bytes written to the output stream.
  *                or BUFFER_ERROR if an error occurs.
  */
-size_t buffer_fwrite(BUFFER * buffer, FILE * ostream);
+size_t pep_buffer_fwrite(pep_buffer_t * buffer, FILE * ostream);
 
 /**
  * Writes count element, each size byte long, from the src array into the buffer.
@@ -80,23 +80,23 @@ size_t buffer_fwrite(BUFFER * buffer, FILE * ostream);
  * @param void * src pointer to the source array.
  * @param size_t size size in byte of each element.
  * @param size_t count number of element to read.
- * @param BUFFER * buffer pointer to the buffer.
+ * @param pep_buffer_t * buffer pointer to the buffer.
  *
  * @return size_t number of bytes written into the buffer.
  *                or BUFFER_ERROR if an error occurs.
  */
-size_t buffer_write(const void * src, size_t size, size_t count, void * buffer);
+size_t pep_buffer_write(const void * src, size_t size, size_t count, void * buffer);
 
 /**
  * Fully read an input stream in to the buffer.
  *
- * @param BUFFER * buffer pointer to the buffer.
+ * @param pep_buffer_t * buffer pointer to the buffer.
  * @param FILE * istream pointer to the input stream.
  *
  * @return size_t number of bytes read from the input stream
  *                or BUFFER_ERROR if an error occurs.
  */
-size_t buffer_fread(BUFFER * buffer, FILE * istream);
+size_t pep_buffer_fread(pep_buffer_t * buffer, FILE * istream);
 
 /**
  * Reads count element, each size byte long, from the buffer and store them
@@ -105,77 +105,77 @@ size_t buffer_fread(BUFFER * buffer, FILE * istream);
  * @param void * dst pointer to the destination array.
  * @param size_t size in byte of each element.
  * @param size_t count number of element to read.
- * @param BUFFER * buffer pointer to the buffer.
+ * @param pep_buffer_t * buffer pointer to the buffer.
  *
  * @return size_t number of bytes effectively read from the buffer
  *                or BUFFER_ERROR if an error occurs.
  */
-size_t buffer_read(void * dst, size_t size, size_t count, void * buffer);
+size_t pep_buffer_read(void * dst, size_t size, size_t count, void * buffer);
 
 /**
  * Tests the end of buffer.
  *
- * @param BUFFER * buffer pointer to the buffer.
+ * @param pep_buffer_t * buffer pointer to the buffer.
  *
  * @return int FALSE if there is some unread data in the buffer, TRUE otherwise.
  */
-int buffer_eof(BUFFER * buffer);
+int pep_buffer_eof(pep_buffer_t * buffer);
 
 /**
  * Returns the next available character or BUFFER_EOF
  *
- * @param BUFFER * buffer pointer to the buffer.
+ * @param pep_buffer_t * buffer pointer to the buffer.
  *
  * @return int the next character or BUFFER_EOF.
  */
-int buffer_getc(BUFFER * buffer);
+int pep_buffer_getc(pep_buffer_t * buffer);
 
 /**
  * Push back the character c, cast as a unsigned char, into the buffer.
  *
  * @param int c the character to push back at the begin of the buffer.
- * @param BUFFER * buffer pointer to the buffer.
+ * @param pep_buffer_t * buffer pointer to the buffer.
  *
  * @return int BUFFER_OK or BUFFER_ERROR if an error occurs.
  */
-int buffer_ungetc(int c, BUFFER * buffer);
+int pep_buffer_ungetc(int c, pep_buffer_t * buffer);
 
 /**
  * Adds the character c, cast as a unsigned char, at the end of the buffer.
  *
  * @param int c the character to add at the end of the buffer.
- * @param BUFFER * buffer pointer to the buffer.
+ * @param pep_buffer_t * buffer pointer to the buffer.
  *
  * @return int BUFFER_OK or BUFFER_ERROR if an error occurs.
  */
-int buffer_putc(int c, BUFFER * buffer);
+int pep_buffer_putc(int c, pep_buffer_t * buffer);
 
 /**
  * Rewind the buffer read position.
  *
- * @param BUFFER * buffer pointer to the buffer.
+ * @param pep_buffer_t * buffer pointer to the buffer.
  *
  * @return int BUFFER_OK or BUFFER_ERROR if an error occurs.
  */
-int buffer_rewind(BUFFER * buffer);
+int pep_buffer_rewind(pep_buffer_t * buffer);
 
 /**
  * Reset the buffer write and read position pointer, and zero the buffer content.
  *
- * @param BUFFER * buffer pointer to the buffer.
+ * @param pep_buffer_t * buffer pointer to the buffer.
  *
  * @return int BUFFER_OK or BUFFER_ERROR if an error occurs.
  */
-int buffer_reset(BUFFER * buffer);
+int pep_buffer_reset(pep_buffer_t * buffer);
 
 /**
  * Returns the number of char available to read.
  *
- * @param BUFFER * buffer pointer to the buffer.
+ * @param pep_buffer_t * buffer pointer to the buffer.
  *
  * @return size_t number of bytes in buffer or 0 if an error occurs.
  */
-size_t buffer_length(BUFFER * buffer);
+size_t pep_buffer_length(pep_buffer_t * buffer);
 
 #ifdef  __cplusplus
 }

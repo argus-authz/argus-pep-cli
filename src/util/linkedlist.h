@@ -22,7 +22,7 @@
 extern "C" {
 #endif
 
-#include <stddef.h>
+#include <stddef.h> /* size_t */
 
 /* Return code OK */
 #define LLIST_OK 0
@@ -30,16 +30,16 @@ extern "C" {
 #define LLIST_ERROR -1
 
 /**
- * Linked list type
+ * ADT Linked list type
  */
-typedef struct linkedlist linkedlist_t;
+typedef struct pep_linkedlist pep_linkedlist_t;
 
 /**
  * Creates an empty linked list.
  *
  * @return a pointer to the new linked list or NULL if an error occurs.
  */
-linkedlist_t * llist_create( void );
+pep_linkedlist_t * pep_llist_create( void );
 
 /**
  * Returns the linked list length.
@@ -48,7 +48,7 @@ linkedlist_t * llist_create( void );
  *
  * @return size_t number of element in the list, @c 0 if empty or an error occurs.
  */
-size_t llist_length(const linkedlist_t * list);
+size_t pep_llist_length(const pep_linkedlist_t * list);
 
 /**
  * Adds an element at the end of the linked list.
@@ -58,7 +58,7 @@ size_t llist_length(const linkedlist_t * list);
  *
  * @return LLIST_OK or LLIST_ERROR if an error occurs.
  */
-int llist_add(linkedlist_t * list, void * element);
+int pep_llist_add(pep_linkedlist_t * list, void * element);
 
 /**
  * Returns the element at position i [0..n-1] or NULL if index i is out of range.
@@ -69,7 +69,7 @@ int llist_add(linkedlist_t * list, void * element);
  * @return void * element pointer to the element
  *         or NULL if an error occurs (index out of range, ...)
  */
-void * llist_get(linkedlist_t * list, int i);
+void * pep_llist_get(pep_linkedlist_t * list, int i);
 
 /**
  * Removes the element at position i [0..n-1].
@@ -80,7 +80,7 @@ void * llist_get(linkedlist_t * list, int i);
  * @return void * element pointer to the removed element
  *         or NULL if an error occurs (index out of range, ...)
  */
-void * llist_remove(linkedlist_t * list, int i);
+void * pep_llist_remove(pep_linkedlist_t * list, int i);
 
 /**
  * Deletes the linked list.
@@ -90,19 +90,19 @@ void * llist_remove(linkedlist_t * list, int i);
  *
  * @return LLIST_OK or LLIST_ERROR if an error occurs.
  */
-int llist_delete(linkedlist_t * list);
+int pep_llist_delete(pep_linkedlist_t * list);
 
 /**
  * Applies the delete function on each element contained in the list. The
  * linked list is not released.
  *
  * @param linkedlist_t * list pointer to the linked list.
- * @param delete_element_func delete function to apply to each element.
+ * @param pep_llist_delete_elt_f delete function to apply to each element.
  *
  * @return LLIST_OK or LLIST_ERROR if an error occurs.
  */
-typedef void (*delete_element_func) (void *);
-int llist_delete_elements(linkedlist_t * list, delete_element_func deletef);
+typedef void (*pep_llist_delete_elt_f) (void *);
+int pep_llist_delete_elements(pep_linkedlist_t * list, pep_llist_delete_elt_f deletef);
 
 #ifdef  __cplusplus
 }
