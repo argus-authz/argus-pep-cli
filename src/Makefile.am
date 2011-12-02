@@ -17,6 +17,9 @@
 # $Id: Makefile.am 1299 2009-10-15 15:29:34Z vtschopp $
 #
 
+SUBDIRS = util
+AM_CPPFLAGS = -I$(top_srcdir)/src/util
+
 #
 # PEP-C client CLI exec
 #
@@ -27,12 +30,10 @@ pepcli_SOURCES = \
     log.c
 
 pepcli_CFLAGS = \
-    $(GLITE_CFLAGS) \
     $(LIBARGUS_PEP_CFLAGS)
     
-pepcli_LDFLAGS = \
-    $(GLITE_LDFLAGS)
-    
+#pepcli_LDFLAGS =
+
 pepcli_LDADD = \
     $(LIBARGUS_PEP_LIBS)
 

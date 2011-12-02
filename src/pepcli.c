@@ -30,13 +30,14 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"  /* PACKAGE_NAME and PACKAGE_VERSION const */
 #else
-#define PACKAGE_VERSION "0.0.0"
+#define PACKAGE_VERSION "2.1.0"
 #define PACKAGE_NAME "pepcli"
 #endif
 
-#include "argus/pep.h"
-#include "util/buffer.h"
-#include "util/linkedlist.h"
+#include <argus/pep.h>
+/* from src/util */
+#include "buffer.h"
+#include "linkedlist.h"
 
 // logging prototypes: log.c
 void show_info(const char * format, ...);
@@ -81,6 +82,8 @@ static struct option long_options[] = {
    {"key", required_argument, 0, '3'},
    {"keypasswd", required_argument, 0, '4'},
    {"cacert", required_argument, 0, '5'},
+   // profile
+   {"profile", required_argument, 0, '6'},
    {0, 0, 0, 0}
 };
 
@@ -177,7 +180,7 @@ static char * read_certchain(const char * filename) {
         show_error("failed to open certchain file: %s: %s", filename, strerror(errno));
         return NULL;
     }
-    BUFFER * cert_buffer= buffer_create(1024);
+    pep_buffer_t * cert_buffer= pep_buffer_create(1024);
     if (cert_buffer==NULL) {
         show_error("can not create buffer");
         return NULL;
@@ -189,7 +192,7 @@ static char * read_certchain(const char * filename) {
             // show_debug("certificate begin");
         }
         if (cert_part) {
-            buffer_write(line,sizeof(char),strlen(line),cert_buffer);
+            pep_buffer_write(line,sizeof(char),strlen(line),cert_buffer);
         }
         if (strncmp(CERT_END,line,strlen(CERT_END)) == 0) {
             cert_part= 0; // end
@@ -198,23 +201,23 @@ static char * read_certchain(const char * filename) {
     }
     fclose(file);
 
-    size_t size= buffer_length(cert_buffer);
+    size_t size= pep_buffer_length(cert_buffer);
     // show_debug("buffer length: %d",(int)size);
     char * certchain= calloc(size+1,sizeof(char));
     if (certchain==NULL) {
         show_error("can not allocate buffer %d bytes: %s",size,strerror(errno));
-        buffer_delete(cert_buffer);
+        pep_buffer_delete(cert_buffer);
         return NULL;
     }
     // copy
-    if (buffer_read(certchain,sizeof(char),size,cert_buffer)==BUFFER_ERROR) {
+    if (pep_buffer_read(certchain,sizeof(char),size,cert_buffer)==BUFFER_ERROR) {
         show_error("failed to copy certificate content to buffer");
-        buffer_delete(cert_buffer);
+        pep_buffer_delete(cert_buffer);
         free(certchain);
         return NULL;
     }
 
-    buffer_delete(cert_buffer);
+    pep_buffer_delete(cert_buffer);
     // check empty certchain
     if (strlen(certchain)<=0) {
         show_warn("certchain file: %s does not contain certificate",certchain_filename);
@@ -254,6 +257,7 @@ static xacml_subject_t * create_xacml_subject_id(const char * x500dn) {
  * @param certchain the PEM blocks of the certificate chain
  * @return pointer to the XACML Subject created or @c NULL on error.
  */
+/* NOT USED ANYMORE
 static xacml_subject_t * create_xacml_subject_certchain(const char * certchain) {
     if (certchain==NULL) return NULL;
     // Subject cert-chain
@@ -273,6 +277,7 @@ static xacml_subject_t * create_xacml_subject_certchain(const char * certchain) 
     xacml_subject_addattribute(subject,subject_attr_id);
     return subject;
 }
+*/
 
 /**
  * Creates a Grid WN AuthZ Profile XACML Subject key-info
@@ -304,10 +309,10 @@ static xacml_subject_t * create_xacml_subject_keyinfo(const char * certchain) {
  * @param fqans_list the list of FQANs, the first one in the list is the fqan/primary.
  * @return pointer to the XACML Subject created or @c NULL on empty FQANs list or on error.
  */
-static xacml_subject_t * create_xacml_subject_fqans(linkedlist_t * fqans_list) {
+static xacml_subject_t * create_xacml_subject_fqans(pep_linkedlist_t * fqans_list) {
     if (fqans_list==NULL) return NULL;
     // empty list
-    size_t fqans_l= llist_length(fqans_list);
+    size_t fqans_l= pep_llist_length(fqans_list);
     if (fqans_l<1) return NULL;
 
     xacml_subject_t * subject= xacml_subject_create();
@@ -325,7 +330,7 @@ static xacml_subject_t * create_xacml_subject_fqans(linkedlist_t * fqans_list) {
     }
     xacml_attribute_setdatatype(fqan_attr,XACML_GRIDWN_DATATYPE_FQAN);
     for (i= 0; i<fqans_l; i++) {
-        char * fqan= (char *)llist_get(fqans_list,i);
+        char * fqan= (char *)pep_llist_get(fqans_list,i);
         if (fqan==NULL) {
             show_error("NULL pointer in FQANs list at: %d",i);
             xacml_subject_delete(subject);
@@ -354,10 +359,11 @@ static xacml_subject_t * create_xacml_subject_fqans(linkedlist_t * fqans_list) {
  * @param fqans_list the list of FQANs, the first one in the list is the voms-primary-fqan.
  * @return pointer to the XACML Subject created or @c NULL on empty FQANs list or on error.
  */
-static xacml_subject_t * create_xacml_subject_voms_fqans(linkedlist_t * fqans_list) {
+/* NOT USED ANYMORE
+static xacml_subject_t * create_xacml_subject_voms_fqans(pep_linkedlist_t * fqans_list) {
     if (fqans_list==NULL) return NULL;
     // empty list
-    size_t fqans_l= llist_length(fqans_list);
+    size_t fqans_l= pep_llist_length(fqans_list);
     if (fqans_l<1) return NULL;
 
     xacml_subject_t * subject= xacml_subject_create();
@@ -375,7 +381,7 @@ static xacml_subject_t * create_xacml_subject_voms_fqans(linkedlist_t * fqans_li
     }
     xacml_attribute_setdatatype(voms_fqan,XACML_DATATYPE_STRING);
     for (i= 0; i<fqans_l; i++) {
-        char * fqan= (char *)llist_get(fqans_list,i);
+        char * fqan= (char *)pep_llist_get(fqans_list,i);
         if (fqan==NULL) {
             show_error("NULL pointer in FQANs list at: %d",i);
             xacml_subject_delete(subject);
@@ -398,6 +404,7 @@ static xacml_subject_t * create_xacml_subject_voms_fqans(linkedlist_t * fqans_li
     xacml_subject_addattribute(subject,voms_fqan);
     return subject;
 }
+*/
 
 /**
  * Merges the attributes of the first XACML Subject into the second Subject.
@@ -821,6 +828,7 @@ static void show_help() {
     fprintf(stdout,"                         Add multiple --fqan options for secondary FQANs.\n");
     fprintf(stdout," -r|--resourceid <URI>   XACML Resource resource-id.\n");
     fprintf(stdout," -a|--actionid <URI>     XACML Action action-id.\n");
+    fprintf(stdout," --profileid <URI>       XACML profile-id (default TODO).\n");    
     fprintf(stdout," -t|--timeout <SEC>      Connection timeout in second (default 30s).\n");
     fprintf(stdout," -x|--requestcontext     Show effective XACML Request context.\n");
     fprintf(stdout," -v|--verbose            Verbose.\n");
@@ -844,7 +852,7 @@ static void show_help() {
  */
 int main(int argc, char **argv) {
     PEP * pep;
-    linkedlist_t * fqans= llist_create();
+    pep_linkedlist_t * fqans= pep_llist_create();
     if (fqans==NULL) {
         show_error("Can not allocate FQAN list.");
         exit(E_MEMORY);
@@ -879,7 +887,7 @@ int main(int argc, char **argv) {
             show_debug("fqan: %s",optarg);
             // add fqan to list
             if (strlen(optarg) > 0) {
-                llist_add(fqans,optarg);
+                pep_llist_add(fqans,optarg);
             }
             break;
         case 's':
@@ -1043,10 +1051,10 @@ int main(int argc, char **argv) {
     if (actionid!=NULL) {
         show_info("actionid: %s",actionid);
     }
-    size_t fqans_l= llist_length(fqans);
+    size_t fqans_l= pep_llist_length(fqans);
     int i;
     for (i= 0; i<fqans_l; i++) {
-        char * fqan= (char *)llist_get(fqans,i);
+        char * fqan= (char *)pep_llist_get(fqans,i);
         if (i==0)
             show_info("fqan: %s (primary)",fqan);
         else
@@ -1232,7 +1240,7 @@ int main(int argc, char **argv) {
     pep_destroy(pep);
     xacml_request_delete(request);
     xacml_response_delete(response);
-    llist_delete(fqans);
+    pep_llist_delete(fqans);
     if (certchain!=NULL) free(certchain);
 
     //show_info("done.");
