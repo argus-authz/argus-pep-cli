@@ -56,11 +56,17 @@ AC_MSG_NOTICE([libdir for $host: $libdir])
 #
 # use environment variable PKG_CONFIG_PATH=$libdir/pkgconfig
 #
-PKG_CHECK_MODULES(LIBARGUS_PEP,[libargus-pep >= 2],
-    [AC_MSG_NOTICE([LIBARGUS_PEP_CFLAGS=$LIBARGUS_PEP_CFLAGS])
-     AC_MSG_NOTICE([LIBARGUS_PEP_LIBS=$LIBARGUS_PEP_LIBS])],
-    [AC_MSG_ERROR([Argus PEP client API (libargus-pep >= 2) not available. Check the PKG_CONFIG_PATH environment variable.])])
-
+AC_MSG_NOTICE([pkg-config libargus-pep >= 2])
+PKG_CHECK_MODULES(LIBARGUS_PEP,
+    [libargus-pep >= 2],
+    [
+        AC_MSG_NOTICE([LIBARGUS_PEP_CFLAGS=$LIBARGUS_PEP_CFLAGS])
+        AC_MSG_NOTICE([LIBARGUS_PEP_LIBS=$LIBARGUS_PEP_LIBS])
+    ],
+    [
+        AC_MSG_ERROR([Argus PEP client API (libargus-pep >= 2) not available. Check the PKG_CONFIG_PATH environment variable.])
+    ]
+)
 
 # Checks for header files.
 AC_HEADER_STDC
