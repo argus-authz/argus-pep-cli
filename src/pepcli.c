@@ -828,9 +828,7 @@ static void show_help() {
     fprintf(stdout,"                         Add multiple --fqan options for secondary FQANs.\n");
     fprintf(stdout," -r|--resourceid <URI>   XACML Resource resource-id.\n");
     fprintf(stdout," -a|--actionid <URI>     XACML Action action-id.\n");
-/*
     fprintf(stdout," --profileid <URI>       XACML profile-id (default TODO).\n");    
-*/
     fprintf(stdout," -t|--timeout <SEC>      Connection timeout in second (default 30s).\n");
     fprintf(stdout," -x|--requestcontext     Show effective XACML Request context.\n");
     fprintf(stdout," -v|--verbose            Verbose.\n");
