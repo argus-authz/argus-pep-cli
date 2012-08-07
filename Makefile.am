@@ -27,3 +27,39 @@ doc_DATA = AUTHORS CHANGELOG LICENSE COPYRIGHT
 doxygen: doc/Doxyfile
 	$(DOXYGEN) doc/Doxyfile
 
+#
+# RPM/ETICS
+#
+name = argus-pepcli
+spec_file = fedora/$(name).spec
+version = $(shell grep "Version:" $(spec_file) | sed -e "s/Version://g" -e "s/[ \t]*//g")
+release = 1
+rpmbuild_dir = $(shell pwd)/rpmbuild
+stage_dir = $(shell pwd)/stage
+fakeroot_dir = $(shell pwd)/FAKEROOT
+
+clean-local:
+	$(RM) -fr rpmbuild stage tgz RPMS target FAKEROOT *.tar.gz
+
+rpm: dist
+	mv -v $(name)-$(version).tar.gz $(name)-$(version).src.tar.gz
+	echo "Building RPM in $(rpmbuild_dir)"
+	mkdir -p $(rpmbuild_dir)/BUILD $(rpmbuild_dir)/RPMS \
+		$(rpmbuild_dir)/SOURCES $(rpmbuild_dir)/SPECS \
+		$(rpmbuild_dir)/SRPMS
+	cp -v $(name)-$(version).src.tar.gz $(rpmbuild_dir)/SOURCES/$(name)-$(version).tar.gz
+	rpmbuild -v -ba $(spec_file) --define "_topdir $(rpmbuild_dir)"
+
+binary-tarball:
+	mkdir -p $(fakeroot_dir)
+	make DESTDIR=$(fakeroot_dir) install
+	cd $(fakeroot_dir) && tar -cvzf ../$(name)-$(version).bin.tar.gz *
+
+
+etics: rpm
+	echo "Publishing RPMs and tarballs"
+	mkdir -p tgz RPMS
+	cp -v $(name)-$(version).src.tar.gz $(name)-$(version).bin.tar.gz tgz
+	cp -rv $(rpmbuild_dir)/RPMS/* $(rpmbuild_dir)/SRPMS/* RPMS
+
+
