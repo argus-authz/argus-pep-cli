@@ -16,8 +16,10 @@ BuildRequires: argus-pep-api-c-devel
 
 %description
 Argus PEP client command line interface: pepcli
-The Argus PEP client command line interface is used to communicate with the Argus PEP Server. 
-It authorizes request and receives authorization response back from Argus.
+
+The Argus PEP client command line interface is used to communicate 
+with the Argus PEP Server. It authorizes request and receives 
+authorization response back from Argus.
 
 %prep
 %setup -q
@@ -37,8 +39,7 @@ make %{?_smp_mflags}
 rm -rf $RPM_BUILD_ROOT
 
 make DESTDIR=$RPM_BUILD_ROOT install
-find $RPM_BUILD_ROOT -name '*.la' -exec rm -f {} ';'
-strip -s -v %{buildroot}%{_libdir}/*.so
+strip -s -v %{buildroot}%{_bindir}/pepcli
 
 
 %clean
@@ -48,7 +49,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %{_bindir}/pepcli
 %{_mandir}/man1/pepcli.1.gz
-%doc AUTHORS COPYRIGHT LICENSE README INSTALL DEPENDENCIES CHANGELOG
+%doc AUTHORS COPYRIGHT LICENSE README INSTALL CHANGELOG
 
 %changelog
 * Fri Aug 3 2012 Valery Tschopp <valery.tschopp@switch.ch> 2.1.1-1
@@ -56,14 +57,6 @@ rm -rf $RPM_BUILD_ROOT
 
 * Tue Apr 3 2012 Valery Tschopp <valery.tschopp@switch.ch> 2.1.0-2
 - Initial Argus pepcli command  for EMI 2.
-
-
--------
-%files
-%defattr(-,root,root,-)
-%{_libdir}/libargus-pep.so.2.0.4
-%{_libdir}/libargus-pep.so.2
-
 
 
 
