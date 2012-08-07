@@ -1,0 +1,6 @@
+/target
+/rpmbuild
+/RPMS
+/tgz
+/stage
+/FAKEROOT
