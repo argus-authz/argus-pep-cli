@@ -49,7 +49,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %{_bindir}/pepcli
 %{_mandir}/man1/pepcli.1.gz
-%doc COPYING LICENSE INSTALL ChangeLog
+%doc COPYING LICENSE TODO ChangeLog
 
 %changelog
 * Fri Aug 3 2012 Valery Tschopp <valery.tschopp@switch.ch> 2.1.1-1
