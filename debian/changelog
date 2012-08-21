@@ -1,5 +1,5 @@
 argus-pepcli (2.1.1-1) unstable; urgency=low
 
-  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+  * Initial release for Debian (Closes: #23482) 
 
  -- Valery Tschopp <valery.tschopp@switch.ch>  Tue, 21 Aug 2012 10:52:57 +0200
