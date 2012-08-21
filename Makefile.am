@@ -14,11 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# $Id: Makefile.am 1299 2009-10-15 15:29:34Z vtschopp $
-#
 
 SUBDIRS = src 
-EXTRA_DIST = AUTHORS CHANGELOG LICENSE COPYRIGHT autotools.sh fedora
+EXTRA_DIST = AUTHORS CHANGELOG LICENSE COPYRIGHT autotools.sh fedora debian
 
 docdir = $(datadir)/doc/$(PACKAGE_NAME)-$(PACKAGE_VERSION)
 doc_DATA = AUTHORS CHANGELOG LICENSE COPYRIGHT
@@ -31,29 +29,41 @@ doxygen: doc/Doxyfile
 # RPM/ETICS
 #
 name = argus-pepcli
-spec_file = fedora/$(name).spec
-version = $(shell grep "Version:" $(spec_file) | sed -e "s/Version://g" -e "s/[ \t]*//g")
+version = $(PACKAGE_VERSION)
 release = 1
-rpmbuild_dir = $(shell pwd)/rpmbuild
-stage_dir = $(shell pwd)/stage
-fakeroot_dir = $(shell pwd)/FAKEROOT
+
+spec_file = fedora/$(name).spec
+rpmbuild_dir = $(CURDIR)/rpmbuild
+debbuild_dir = $(CURDIR)/debbuild
 
 clean-local:
 	@echo "Cleaning..."
-	rm -fr rpmbuild stage tgz RPMS target FAKEROOT *.tar.gz
+	rm -fr rpmbuild debbuild tgz RPMS target *.tar.gz 
 
-rpm: dist
-	rpm --version
+
+spec:
+	@echo "Setting version and release in spec file: $(version)-$(release)"
+	sed -e 's#@@SPEC_VERSION@@#$(version)#g' -e 's#@@SPEC_RELEASE@@#$(release)#g' $(spec_file).in > $(spec_file)
+
+
+rpm: spec
+	test -f $(name)-$(version).tar.gz || make dist
 	@echo "Building RPM with $(spec_file)"
 	mv $(name)-$(version).tar.gz $(name)-$(version).src.tar.gz
 	mkdir -p $(rpmbuild_dir)/BUILD $(rpmbuild_dir)/RPMS $(rpmbuild_dir)/SOURCES $(rpmbuild_dir)/SPECS $(rpmbuild_dir)/SRPMS
 	cp $(name)-$(version).src.tar.gz $(rpmbuild_dir)/SOURCES/$(name)-$(version).tar.gz
 	rpmbuild -v -ba $(spec_file) --define "_topdir $(rpmbuild_dir)"
 
-binary-tarball:
-	mkdir -p $(fakeroot_dir)
-	make DESTDIR=$(fakeroot_dir) install
-	cd $(fakeroot_dir) && tar -cvzf ../$(name)-$(version).bin.tar.gz *
+
+deb:
+	test -f $(name)-$(version).tar.gz || make dist
+	@echo "Building Debian package in $(debbuild_dir)"
+	mv $(name)-$(version).tar.gz $(name)-$(version).src.tar.gz
+	mkdir -p $(debbuild_dir)
+	cp $(name)-$(version).src.tar.gz $(debbuild_dir)/$(name)_$(version).orig.tar.gz
+	tar -C $(debbuild_dir) -xf $(name)-$(version).src.tar.gz
+	cd $(debbuild_dir)/$(name)-$(version) && debuild -us -uc 
+
 
 etics: 
 	@echo "Publishing RPMs and tarballs"
@@ -62,3 +72,5 @@ etics:
 	cp -r $(rpmbuild_dir)/RPMS/* $(rpmbuild_dir)/SRPMS/* RPMS
 	test -f $(name)-$(version).src.tar.gz && cp $(name)-$(version).src.tar.gz tgz
 	test ! -f $(name)-$(version).bin.tar.gz || cp $(name)-$(version).bin.tar.gz tgz/$(name)-$(version).tar.gz
+
+
