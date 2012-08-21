@@ -1,7 +1,7 @@
 Name: argus-pepcli
 
-Version: @@VERSION@@
-Release: @@RELEASE@@%{?dist}
+Version: @@SPEC_VERSION@@
+Release: @@SPEC_RELEASE@@%{?dist}
 Summary: Argus pepcli command line
 
 
