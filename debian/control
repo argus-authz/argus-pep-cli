@@ -1,0 +1,21 @@
+Source: argus-pepcli
+Section: utils
+Priority: extra
+Maintainer: Valery Tschopp <valery.tschopp@switch.ch>
+Build-Depends: debhelper (>= 7.0.50~), dh-autoreconf, pkg-config, autotools-dev, libargus-pep-devel
+Standards-Version: 3.8.4
+Homepage: https://twiki.cern.ch/twiki/bin/view/EGEE/AuthZPEPCCLI
+Vcs-Git: git://github.com/argus-authz/argus-pep-cli.git
+Vcs-Browser: https://github.com/argus-authz/argus-pep-cli
+
+Package: argus-pepcli
+Architecture: any
+Depends: libargus-pep2, ${shlibs:Depends}, ${misc:Depends}
+Description: Argus pepcli command line interface
+ This pepcli command allows you to submit a XACML request to the 
+ Argus PEP Server and display the XACML response.
+ The command is very useful to check if a XACML policy applies 
+ (decision is permit, deny, not applicable or indeterminate) for 
+ the given XACML request. Or to check if the XACML response 
+ corresponds to the values you are expecting (uidgid, 
+ secondary-gids, ...) for the user mapping. 
