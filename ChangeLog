@@ -1,6 +1,9 @@
+argus-pepcli 2.1.1 (EMI)
+------------------
+* self managed RPM and Debian packaging.
+
 argus-pepcli 2.1.0 (EMI)
 ------------------
-* TODO: profile!!!!!!
 * new --keyinfo <CERT_FILE> param replaces --certchain <CERT_FILE> parameter.
 * peers SSL validation enabled by default.
 * OpenSSL 1.0 cipher list bug fix moved to emi-argus-pep-api-c library.
@@ -26,7 +29,4 @@ PEP-C-CLI 1.2.0
 * core: PEP command line interface (pepcli) separated from the PEP client library package (pep-c-lib and pep-c-cli).
 * pepcli: -h|--help shows PEP-C library too.
 * pepcli: -V|--version option added. 
-
---
-$Id: CHANGELOG 1282 2009-09-24 09:56:46Z vtschopp $
 

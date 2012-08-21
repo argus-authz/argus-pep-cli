@@ -16,10 +16,10 @@
 #
 
 SUBDIRS = src 
-EXTRA_DIST = AUTHORS CHANGELOG LICENSE COPYRIGHT autotools.sh fedora debian
+EXTRA_DIST = AUTHORS ChangeLog LICENSE COPYRIGHT autotools.sh fedora debian
 
 docdir = $(datadir)/doc/$(PACKAGE_NAME)-$(PACKAGE_VERSION)
-doc_DATA = AUTHORS CHANGELOG LICENSE COPYRIGHT
+doc_DATA = AUTHORS ChangeLog LICENSE COPYRIGHT
 
 # Generate doxygen doc
 doxygen: doc/Doxyfile
