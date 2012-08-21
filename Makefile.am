@@ -38,7 +38,7 @@ debbuild_dir = $(CURDIR)/debbuild
 
 clean-local:
 	@echo "Cleaning..."
-	rm -fr rpmbuild debbuild tgz RPMS target *.tar.gz 
+	rm -fr $(rpmbuild_dir) $(debbuild_dir) $(spec_file) tgz RPMS target *.tar.gz 
 
 
 spec:
