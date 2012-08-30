@@ -35,10 +35,14 @@ release = 1
 spec_file = fedora/$(name).spec
 rpmbuild_dir = $(CURDIR)/rpmbuild
 debbuild_dir = $(CURDIR)/debbuild
+tmp_dir=$(CURDIR)/tmp
+tgz_dir=$(CURDIR)/tgz
+rpm_dir=$(CURDIR)/RPMS
+deb_dir=$(CURDIR)/debs
 
 clean-local:
 	@echo "Cleaning..."
-	rm -fr $(rpmbuild_dir) $(debbuild_dir) $(spec_file) tgz RPMS target *.tar.gz 
+	rm -rf target $(rpmbuild_dir) $(debbuild_dir) $(tmp_dir) *.tar.gz $(tgz_dir) $(rpm_dir) $(deb_dir) $(spec_file)
 
 
 spec:
@@ -46,31 +50,71 @@ spec:
 	sed -e 's#@@SPEC_VERSION@@#$(version)#g' -e 's#@@SPEC_RELEASE@@#$(release)#g' $(spec_file).in > $(spec_file)
 
 
-rpm: spec
+pre_rpmbuild: spec
 	test -f $(name)-$(version).tar.gz || make dist
-	@echo "Building RPM with $(spec_file)"
+	@echo "Preparing for rpmbuild in $(rpmbuild_dir)"
 	mv $(name)-$(version).tar.gz $(name)-$(version).src.tar.gz
 	mkdir -p $(rpmbuild_dir)/BUILD $(rpmbuild_dir)/RPMS $(rpmbuild_dir)/SOURCES $(rpmbuild_dir)/SPECS $(rpmbuild_dir)/SRPMS
 	cp $(name)-$(version).src.tar.gz $(rpmbuild_dir)/SOURCES/$(name)-$(version).tar.gz
-	rpmbuild -v -ba $(spec_file) --define "_topdir $(rpmbuild_dir)"
 
 
-deb:
+srpm: pre_rpmbuild
+	@echo "Building SRPM in $(rpmbuild_dir)"
+	rpmbuild --nodeps -v -bs $(spec_file) --define "_topdir $(rpmbuild_dir)"
+
+
+rpm: pre_rpmbuild
+	@echo "Building RPM/SRPM in $(rpmbuild_dir)"
+	rpmbuild --nodeps -v -ba $(spec_file) --define "_topdir $(rpmbuild_dir)"
+
+
+pre_debbuild:
 	test -f $(name)-$(version).tar.gz || make dist
-	@echo "Building Debian package in $(debbuild_dir)"
+	@echo "Prepare for Debian building in $(debbuild_dir)"
 	mv $(name)-$(version).tar.gz $(name)-$(version).src.tar.gz
 	mkdir -p $(debbuild_dir)
 	cp $(name)-$(version).src.tar.gz $(debbuild_dir)/$(name)_$(version).orig.tar.gz
-	tar -C $(debbuild_dir) -xf $(name)-$(version).src.tar.gz
+	tar -C $(debbuild_dir) -xzf $(name)-$(version).src.tar.gz
+
+
+deb: pre_debbuild
+	@echo "Building Debian package in $(debbuild_dir)"
 	cd $(debbuild_dir)/$(name)-$(version) && debuild -us -uc 
 
 
-etics: 
-	@echo "Publishing RPMs and tarballs"
-	mkdir -p RPMS tgz
-	test -f $(rpmbuild_dir)/SRPMS/$(name)-$(version)-*.src.rpm
-	cp -r $(rpmbuild_dir)/RPMS/* $(rpmbuild_dir)/SRPMS/* RPMS
-	test -f $(name)-$(version).src.tar.gz && cp $(name)-$(version).src.tar.gz tgz
-	test ! -f $(name)-$(version).bin.tar.gz || cp $(name)-$(version).bin.tar.gz tgz/$(name)-$(version).tar.gz
+deb-src: pre_debbuild
+	@echo "Building Debian source package in $(debbuild_dir)"
+	cd $(debbuild_dir) && dpkg-source -b $(name)-$(version)
+
+
+
+etics:
+	@echo "Publish SRPM/RPM/Debian/tarball"
+	mkdir -p $(rpm_dir) $(tgz_dir) $(deb_dir)
+	test ! -f $(name)-$(version).src.tar.gz || cp -v $(name)-$(version).src.tar.gz $(tgz_dir)
+	test ! -f $(rpmbuild_dir)/SRPMS/$(name)-$(version)-*.src.rpm || cp -v $(rpmbuild_dir)/SRPMS/$(name)-$(version)-*.src.rpm $(rpm_dir)
+	if [ -f $(rpmbuild_dir)/RPMS/*/$(name)-$(version)-*.rpm ] ; then \
+		cp -v $(rpmbuild_dir)/RPMS/*/$(name)-$(version)-*.rpm $(rpm_dir) ; \
+		test ! -d $(tmp_dir) || rm -fr $(tmp_dir) ; \
+		mkdir -p $(tmp_dir) ; \
+		cd $(tmp_dir) ; \
+		rpm2cpio $(rpmbuild_dir)/RPMS/*/$(name)-$(version)-*.rpm | cpio -idm ; \
+		tar -C $(tmp_dir) -czf $(name)-$(version).tar.gz * ; \
+		mv -v $(name)-$(version).tar.gz $(tgz_dir) ; \
+		rm -fr $(tmp_dir) ; \
+	fi
+	test ! -f $(debbuild_dir)/$(name)_$(version)-*.dsc || cp -v $(debbuild_dir)/$(name)_$(version)-*.dsc $(deb_dir)
+	test ! -f $(debbuild_dir)/$(name)_$(version)-*.debian.tar.gz || cp -v $(debbuild_dir)/$(name)_$(version)-*.debian.tar.gz $(deb_dir)
+	test ! -f $(debbuild_dir)/$(name)_$(version).orig.tar.gz || cp -v $(debbuild_dir)/$(name)_$(version).orig.tar.gz $(deb_dir)
+	if [ -f $(debbuild_dir)/$(deb_name)_$(version)-*.deb ] ; then \
+		cp -v $(debbuild_dir)/$(deb_name)_$(version)-*.deb $(deb_dir) ; \
+		test ! -d $(tmp_dir) || rm -fr $(tmp_dir) ; \
+		mkdir -p $(tmp_dir) ; \
+		dpkg -x $(debbuild_dir)/$(deb_name)_$(version)-*.deb $(tmp_dir) ; \
+		cd $(tmp_dir) ; \
+		tar -C $(tmp_dir) -czf $(name)-$(version).tar.gz * ; \
+		mv -v $(name)-$(version).tar.gz $(tgz_dir) ; \
+		rm -fr $(tmp_dir) ; \
+	fi
 
 
