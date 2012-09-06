@@ -3,7 +3,7 @@ Section: utils
 Priority: extra
 Maintainer: Valery Tschopp <valery.tschopp@switch.ch>
 Build-Depends: debhelper (>= 7.0.50~), dh-autoreconf, pkg-config, libargus-pep-dev
-Standards-Version: 3.8.4
+Standards-Version: 3.9.1
 Homepage: https://twiki.cern.ch/twiki/bin/view/EGEE/AuthZPEPCCLI
 Vcs-Git: git://github.com/argus-authz/argus-pep-cli.git
 Vcs-Browser: https://github.com/argus-authz/argus-pep-cli
