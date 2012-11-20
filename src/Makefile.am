@@ -18,7 +18,7 @@
 #
 
 #
-# PEP-C client CLI exec
+# Argus PEP CLI
 #
 bin_PROGRAMS = pepcli
 

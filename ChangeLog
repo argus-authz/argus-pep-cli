@@ -1,8 +1,12 @@
-argus-pepcli 2.1.1 (EMI)
+argus-pepcli 2.2.0 (EMI-2)
+------------------
+* RPM and Debian packaging moved to separate projects.
+
+argus-pepcli 2.1.1 (EMI-2)
 ------------------
 * self managed RPM and Debian packaging.
 
-argus-pepcli 2.1.0 (EMI)
+argus-pepcli 2.1.0 (EMI-2)
 ------------------
 * new --keyinfo <CERT_FILE> param replaces --certchain <CERT_FILE> parameter.
 * peers SSL validation enabled by default.

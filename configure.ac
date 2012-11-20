@@ -18,7 +18,7 @@
 # $Id: configure.ac 1299 2009-10-15 15:29:34Z vtschopp $
 #
 
-AC_INIT([argus-pepcli], [2.1.1], [argus-support@cern.ch])
+AC_INIT([argus-pepcli], [2.2.0], [argus-support@cern.ch])
 AC_CONFIG_AUX_DIR([project])
 AC_CONFIG_MACRO_DIR([project])
 
