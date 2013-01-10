@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Argus pepcli by argus-authz</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Argus pepcli</h1>
+        <p>Argus pepcli command line</p>
+
+        <p class="view"><a href="https://github.com/argus-authz/argus-pep-cli">View the Project on GitHub <small>argus-authz/argus-pep-cli</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/argus-authz/argus-pep-cli/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/argus-authz/argus-pep-cli/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/argus-authz/argus-pep-cli">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h2>Argus pepcli command</h2>
+
+<p>The <code>pepcli</code> command allows you to submit a XACML request to the PEP daemon and display the XACML response.</p>
+
+<p>The command is very useful to check if a XACML policy applies (decision is <code>Permit</code>, <code>Deny</code>, <code>Not Applicable</code> or <code>Indeterminate</code>) for the given XACML request. Or to check if the XACML response correspond to the values you are expecting (<code>uidgid</code>, <code>secondary-gids</code>, ...) for the user mapping. </p>
+
+<h3>Documentation</h3>
+
+<p>The full documentation is available online <a href="https://twiki.cern.ch/twiki/bin/view/EGEE/AuthZPEPCCLI">https://twiki.cern.ch/twiki/bin/view/EGEE/AuthZPEPCCLI</a></p>
+
+<h3>Usage</h3>
+
+<pre><code>Usage:
+    pepcli --pepd &lt;URL&gt; --keyinfo &lt;FILE&gt; [options...]
+    pepcli --pepd &lt;URL&gt; --subjectid &lt;DN&gt; [options...]
+
+Submit a XACML Request to the PEP Server and show the XACML Response.
+
+Options:
+ -p|--pepd &lt;URL&gt;         Argus PEP server endpoint URL.
+ -k|--keyinfo &lt;FILE&gt;     XACML Subject key-info: proxy or X509 file.
+ -s|--subjectid &lt;DN&gt;     XACML Subject subject-id: user DN (format RFC2253).
+ -f|--fqan &lt;FQAN&gt;        XACML Subject primary FQAN and FQANs
+                         Add multiple --fqan options for secondary FQANs.
+ -r|--resourceid &lt;URI&gt;   XACML Resource resource-id.
+ -a|--actionid &lt;URI&gt;     XACML Action action-id.
+ --profileid &lt;URI&gt;       XACML profile-id (default TODO).
+ -t|--timeout &lt;SEC&gt;      Connection timeout in second (default 30s).
+ -x|--requestcontext     Show effective XACML Request context.
+ -v|--verbose            Verbose.
+ -q|--quiet              Turn off output.
+ -d|--debug              Show debug information.
+ -h|--help               This help.
+ -V|--version            Display version and exit.
+TLS options:
+ --capath &lt;DIR&gt;          Directory containing the server PEM encoded CA certificates.
+ --cacert &lt;FILE&gt;         Server PEM encoded CA certificate filename.
+ --cert &lt;FILE&gt;           Client PEM encoded certificate filename.
+ --key &lt;FILE&gt;            Client PEM encoded private key filename.
+ --keypasswd &lt;PASSWD&gt;    Password of the client private key
+                         If the --keypasswd is omitted and the private key is encrypted,
+                         then you will be prompted for the password.
+</code></pre>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/argus-authz">argus-authz</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
