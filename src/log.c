@@ -31,7 +31,8 @@ static void _vfprintf(FILE * fd, const char * level, const char * format, va_lis
     int BUFFER_SIZE= 1024;
     char BUFFER[BUFFER_SIZE];
     memset(BUFFER,0,BUFFER_SIZE);
-    size_t size= BUFFER_SIZE;
+    /* Note: initial size should be one less than BUFFER_SIZE */
+    size_t size= BUFFER_SIZE-1;
     strncat(BUFFER,level,size);
     size= size - strlen(BUFFER);
     strncat(BUFFER,": ",size);
